@@ -1,0 +1,2694 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام متابعة المشروع - تيل</title>
+    
+    <!-- المكتبات الخارجية -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js">
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- 🔥 Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js">
+    </script>
+
+    <style>
+        /* ===== جميع الستايلات السابقة ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            padding: 15px;
+        }
+
+        /* ===== تسجيل الدخول ===== */
+        #loginPage {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+        }
+        .login-container {
+            background: white;
+            padding: 45px 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 420px;
+            text-align: center;
+        }
+        .login-container .logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .login-container h1 {
+            color: #1a202c;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .login-container .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 14px;
+        }
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            background: #f7fafc;
+            font-family: inherit;
+        }
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #4299e1;
+            background: white;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: #2b6cb0;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .login-btn:hover {
+            background: #1a4f8b;
+        }
+        .error-message {
+            color: #e53e3e;
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 14px;
+            min-height: 24px;
+        }
+        .user-list {
+            text-align: right;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #4a5568;
+        }
+        .user-list .role {
+            display: inline-block;
+            background: #edf2f7;
+            padding: 2px 10px;
+            border-radius: 12px;
+            margin: 2px 5px 2px 0;
+            font-size: 12px;
+        }
+
+        /* ===== الصفحة الرئيسية ===== */
+        #appPage {
+            display: none;
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .user-info {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        .user-info .badge {
+            font-size: 13px;
+            font-weight: 400;
+            background: #ebf8ff;
+            color: #2b6cb0;
+            padding: 4px 14px;
+            border-radius: 20px;
+            margin-right: 10px;
+        }
+        .user-info .role-badge {
+            font-size: 12px;
+            background: #f6e05e;
+            color: #744210;
+            padding: 2px 12px;
+            border-radius: 12px;
+            margin-right: 5px;
+        }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .btn-group button {
+            padding: 9px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-save {
+            background: #48bb78;
+            color: white;
+        }
+        .btn-save:hover {
+            background: #38a169;
+        }
+        .btn-print-report {
+            background: #4299e1;
+            color: white;
+        }
+        .btn-print-report:hover {
+            background: #3182ce;
+        }
+        .btn-logout {
+            background: #fc8181;
+            color: white;
+        }
+        .btn-logout:hover {
+            background: #f56565;
+        }
+        .btn-reset {
+            background: #ed8936;
+            color: white;
+        }
+        .btn-reset:hover {
+            background: #dd6b20;
+        }
+        .btn-export {
+            background: #9f7aea;
+            color: white;
+        }
+        .btn-export:hover {
+            background: #805ad5;
+        }
+        .btn-sync {
+            background: #38a169;
+            color: white;
+        }
+        .btn-sync:hover {
+            background: #2f855a;
+        }
+        .btn-language {
+            background: #4a5568;
+            color: white;
+        }
+        .btn-language:hover {
+            background: #2d3748;
+        }
+
+        .status-message {
+            padding: 12px 20px;
+            margin: 10px 0 15px;
+            border-radius: 8px;
+            display: none;
+            font-weight: 500;
+        }
+        .status-success {
+            background: #c6f6d5;
+            color: #22543d;
+            display: block;
+            border-right: 4px solid #48bb78;
+        }
+        .status-error {
+            background: #fed7d7;
+            color: #742a2a;
+            display: block;
+            border-right: 4px solid #fc8181;
+        }
+        .status-info {
+            background: #bee3f8;
+            color: #234e7a;
+            display: block;
+            border-right: 4px solid #4299e1;
+        }
+        .status-warning {
+            background: #fefcbf;
+            color: #744210;
+            display: block;
+            border-right: 4px solid #f6e05e;
+        }
+
+        /* ===== التنبيهات ===== */
+        .alerts-container {
+            background: #fff5f5;
+            border: 2px solid #fc8181;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .alerts-container.active {
+            display: block;
+        }
+        .alerts-container .alert-title {
+            font-weight: 700;
+            color: #742a2a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .alerts-container .alert-item {
+            padding: 5px 10px;
+            margin: 3px 0;
+            background: white;
+            border-radius: 4px;
+            border-right: 3px solid #fc8181;
+            font-size: 13px;
+        }
+
+        /* ===== التبويبات ===== */
+        .page-section {
+            display: none;
+        }
+        .page-section.active {
+            display: block;
+        }
+
+        .tab-bar {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .tab-bar button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: #edf2f7;
+            color: #4a5568;
+        }
+        .tab-bar button:hover {
+            background: #e2e8f0;
+        }
+        .tab-bar button.active {
+            background: #2b6cb0;
+            color: white;
+        }
+        .tab-bar button i {
+            margin-left: 5px;
+        }
+
+        /* ===== البحث والتصفية ===== */
+        .filter-toolbar {
+            background: #f7fafc;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+        .filter-toolbar input,
+        .filter-toolbar select {
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 13px;
+            background: white;
+            font-family: inherit;
+            min-width: 150px;
+        }
+        .filter-toolbar input:focus,
+        .filter-toolbar select:focus {
+            outline: none;
+            border-color: #4299e1;
+        }
+        .filter-toolbar label {
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 13px;
+        }
+        .filter-toolbar .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ===== الجدول ===== */
+        .table-wrapper {
+            overflow-x: auto;
+            max-height: 55vh;
+            overflow-y: auto;
+            border-radius: 8px;
+            border: 2px solid #2d3748;
+            background: white;
+        }
+        .table-wrapper table tbody tr:nth-child(even) {
+            background-color: #f7fafc;
+        }
+        .table-wrapper table tbody tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+        .table-wrapper table tbody tr td:nth-child(even) {
+            background-color: rgba(237, 242, 247, 0.5);
+        }
+        .table-wrapper table tbody tr:hover {
+            background-color: #ebf8ff !important;
+            cursor: pointer;
+        }
+        .table-wrapper table tbody tr:hover td {
+            background-color: #ebf8ff !important;
+        }
+        .table-wrapper table tbody tr td.editable-col {
+            background-color: #fefcbf !important;
+        }
+        .table-wrapper table tbody tr:nth-child(even) td.editable-col {
+            background-color: #fef9c7 !important;
+        }
+        .table-wrapper table tbody tr:nth-child(odd) td.editable-col {
+            background-color: #fefcbf !important;
+        }
+        .table-wrapper table tbody tr td.auto-col {
+            background-color: #c6f6d5 !important;
+        }
+        .table-wrapper table tbody tr td.readonly-col {
+            background-color: #f7fafc !important;
+        }
+        .table-wrapper table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 12px;
+            min-width: 1400px;
+            border: 2px solid #2d3748;
+        }
+        .table-wrapper table td,
+        .table-wrapper table th {
+            border: 1.5px solid #a0aec0;
+            padding: 6px 4px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .table-wrapper table tbody tr {
+            border-bottom: 1.5px solid #cbd5e0;
+        }
+        .table-wrapper table tbody tr td:not(:last-child) {
+            border-right: 1.5px solid #cbd5e0;
+        }
+        .table-wrapper table tbody tr td:nth-child(2) {
+            font-weight: 700;
+            color: #2b6cb0;
+            background-color: #ebf8ff !important;
+            border-left: 3px solid #2b6cb0;
+        }
+        .table-wrapper table tbody tr td:nth-child(3) {
+            font-weight: 600;
+            color: #2d3748;
+            background-color: #edf2f7 !important;
+        }
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+        th {
+            background: #2d3748;
+            color: white;
+            padding: 6px 4px;
+            text-align: center;
+            font-size: 11px;
+            white-space: normal;
+            word-wrap: break-word;
+            min-width: 55px;
+            max-width: 80px;
+            line-height: 1.3;
+            border: 1.5px solid #4a5568 !important;
+        }
+        th .sub {
+            font-size: 9px;
+            opacity: 0.7;
+            display: block;
+            font-weight: 400;
+        }
+        .table-wrapper table thead tr:nth-child(2) th {
+            background: #4a5568;
+            font-size: 9px;
+            color: #e2e8f0;
+            border: 1px solid #5a6a7a !important;
+        }
+        .total-row {
+            background: #2d3748 !important;
+            color: white !important;
+            font-weight: 700;
+        }
+        .total-row td {
+            background: #2d3748 !important;
+            color: white !important;
+            border-color: #4a5568 !important;
+        }
+        .row-low-progress {
+            background-color: #fff5f5 !important;
+        }
+        .row-high-progress {
+            background-color: #f0fff4 !important;
+        }
+        td .villa-name {
+            font-weight: 700;
+            color: #2b6cb0;
+            font-size: 12px;
+        }
+        td .stage-name {
+            font-size: 11px;
+            color: #4a5568;
+            font-weight: 600;
+        }
+        td input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #2b6cb0;
+        }
+        td input[type="checkbox"]:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            accent-color: #a0aec0;
+        }
+        .row-number {
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 11px;
+        }
+
+        .footer-stats {
+            margin-top: 15px;
+            padding: 15px 20px;
+            background: #f7fafc;
+            border-radius: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            align-items: center;
+            font-size: 14px;
+        }
+        .footer-stats .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .footer-stats .stat-item .label {
+            color: #4a5568;
+        }
+        .footer-stats .stat-item .value {
+            font-weight: 700;
+            color: #2d3748;
+        }
+        .footer-stats .stat-item .value.blue {
+            color: #2b6cb0;
+        }
+        .footer-stats .stat-item .value.green {
+            color: #38a169;
+        }
+        .footer-stats .stat-item .value.orange {
+            color: #dd6b20;
+        }
+
+        /* ===== التقارير ===== */
+        .filter-section {
+            background: #f7fafc;
+            padding: 20px 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-section label {
+            font-weight: 700;
+            color: #2d3748;
+            font-size: 14px;
+        }
+        .filter-section select,
+        .filter-section select[multiple] {
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 180px;
+            background: white;
+            font-family: inherit;
+        }
+        .filter-section select:focus,
+        .filter-section select[multiple]:focus {
+            outline: none;
+            border-color: #4299e1;
+        }
+        .filter-section select[multiple] {
+            min-height: 80px;
+            min-width: 200px;
+        }
+        .filter-section button {
+            padding: 10px 30px;
+            background: #2b6cb0;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 15px;
+            transition: background 0.3s;
+        }
+        .filter-section button:hover {
+            background: #1a4f8b;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .filter-group label {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .summary-card {
+            background: #f7fafc;
+            padding: 15px 20px;
+            border-radius: 10px;
+            border-right: 4px solid #4299e1;
+        }
+        .summary-card .label {
+            font-size: 13px;
+            color: #718096;
+        }
+        .summary-card .value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        .summary-card .value.green {
+            color: #38a169;
+        }
+        .summary-card .value.blue {
+            color: #2b6cb0;
+        }
+        .summary-card .value.orange {
+            color: #dd6b20;
+        }
+
+        .progress-bar {
+            background: #edf2f7;
+            border-radius: 20px;
+            height: 24px;
+            width: 100%;
+            min-width: 100px;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 20px;
+            transition: width 0.6s ease;
+            color: white;
+            line-height: 24px;
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+        }
+        .no-data {
+            padding: 40px;
+            text-align: center;
+            color: #718096;
+            font-size: 16px;
+        }
+
+        .chart-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .chart-box {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        .chart-box h4 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+        .chart-box canvas {
+            max-height: 200px;
+            max-width: 100%;
+        }
+
+        /* ===== سجل التعديلات ===== */
+        .audit-log-container {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        .audit-log-container .log-entry {
+            padding: 4px 8px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .audit-log-container .log-entry .time {
+            color: #718096;
+            min-width: 120px;
+        }
+        .audit-log-container .log-entry .user {
+            font-weight: 600;
+            color: #2b6cb0;
+        }
+        .audit-log-container .log-entry .action {
+            color: #2d3748;
+        }
+        .audit-log-container .log-entry .change {
+            color: #dd6b20;
+        }
+
+        /* ===== تصدير ===== */
+        .export-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .export-dropdown-content {
+            display: none;
+            position: absolute;
+            background: white;
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            z-index: 30;
+            right: 0;
+            top: 100%;
+            margin-top: 5px;
+        }
+        .export-dropdown-content button {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            border: none;
+            background: none;
+            text-align: right;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 0;
+        }
+        .export-dropdown-content button:hover {
+            background: #f7fafc;
+        }
+        .export-dropdown:hover .export-dropdown-content {
+            display: block;
+        }
+
+        /* ===== إعدادات Firebase ===== */
+        .sync-settings {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border: 1px solid #e2e8f0;
+        }
+        .sync-settings h4 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sync-settings .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+        .sync-settings .form-row label {
+            font-weight: 600;
+            font-size: 13px;
+            min-width: 100px;
+        }
+        .sync-settings .form-row input {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+        .sync-settings .form-row input:focus {
+            outline: none;
+            border-color: #4299e1;
+        }
+        .sync-settings .form-row button {
+            padding: 8px 20px;
+            background: #2b6cb0;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .sync-settings .form-row button:hover {
+            background: #1a4f8b;
+        }
+        .sync-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .sync-status.connected {
+            background: #c6f6d5;
+            color: #22543d;
+            border-right: 4px solid #48bb78;
+        }
+        .sync-status.disconnected {
+            background: #fed7d7;
+            color: #742a2a;
+            border-right: 4px solid #fc8181;
+        }
+
+        /* ===== طباعة ===== */
+        @media print {
+            .btn-group,
+            .status-message,
+            .filter-section,
+            .no-print,
+            .tab-bar,
+            .filter-toolbar,
+            .alerts-container,
+            .header,
+            .footer-stats,
+            .chart-container,
+            .sync-settings {
+                display: none !important;
+            }
+            body {
+                background: white;
+                padding: 0;
+            }
+            #appPage {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 10px;
+            }
+            .table-wrapper {
+                max-height: none;
+                overflow: visible;
+                border: 2px solid #2d3748 !important;
+            }
+            .table-wrapper table td,
+            .table-wrapper table th {
+                border: 1px solid #000 !important;
+            }
+            #reportPage {
+                display: block !important;
+            }
+            #dashboardPage,
+            #auditPage {
+                display: none !important;
+            }
+            .summary-cards {
+                break-inside: avoid;
+            }
+            .page-section {
+                display: block !important;
+            }
+            .total-row td {
+                background: #2d3748 !important;
+                color: white !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn-group {
+                justify-content: center;
+            }
+            .user-info {
+                text-align: center;
+            }
+            .footer-stats {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .filter-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .login-container {
+                width: 95%;
+                padding: 30px 20px;
+            }
+            .filter-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-toolbar .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .chart-container {
+                grid-template-columns: 1fr;
+            }
+            .export-dropdown-content {
+                right: auto;
+                left: 0;
+            }
+            .sync-settings .form-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .sync-settings .form-row input {
+                min-width: auto;
+            }
+        }
+
+        body.lang-en {
+            direction: ltr;
+        }
+        body.lang-en .login-container,
+        body.lang-en .user-info,
+        body.lang-en .filter-toolbar label,
+        body.lang-en .filter-group label,
+        body.lang-en .footer-stats .stat-item .label,
+        body.lang-en .summary-card .label,
+        body.lang-en .sync-settings .form-row label {
+            text-align: left;
+        }
+        body.lang-en .login-container .user-list {
+            text-align: left;
+        }
+        body.lang-en .alerts-container .alert-item {
+            border-right: none;
+            border-left: 3px solid #fc8181;
+        }
+        body.lang-en .summary-card {
+            border-right: none;
+            border-left: 4px solid #4299e1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================ -->
+    <!-- صفحة تسجيل الدخول -->
+    <!-- ============================================================ -->
+    <div id="loginPage">
+        <div class="login-container">
+            <div class="logo">🏗️</div>
+            <h1 data-i18n="appTitle">نظام متابعة المشروع</h1>
+            <p class="subtitle" data-i18n="appSubtitle">تيل - منصة إدارة المشاريع المتطورة</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="userType" data-i18n="selectUser">👤 اختر المستخدم</label>
+                    <select id="userType" required>
+                        <option value="" data-i18n="selectOption">-- اختر --</option>
+                        <option value="مدير تنفيذي">👑 مدير تنفيذي (كل الصلاحيات)</option>
+                        <option value="مهندس مدني">👷 مهندس مدني</option>
+                        <option value="مهندس ميكانيكا">🔧 مهندس ميكانيكا</option>
+                        <option value="مهندس كهرباء">⚡ مهندس كهرباء</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="password" data-i18n="password">🔑 كلمة المرور</label>
+                    <input type="password" id="password" placeholder="أدخل كلمة المرور" required>
+                </div>
+                <button type="submit" class="login-btn" data-i18n="login">🚀 دخول</button>
+                <div id="loginError" class="error-message"></div>
+            </form>
+            <div class="user-list">
+                <strong data-i18n="passwordsLabel">📌 كلمات المرور الرمزية:</strong><br>
+                <span class="role">مدير تنفيذي</span> admin123
+                <span class="role">مهندس مدني</span> civil123
+                <span class="role">مهندس ميكانيكا</span> mech123
+                <span class="role">مهندس كهرباء</span> elec123
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- التطبيق الرئيسي -->
+    <!-- ============================================================ -->
+    <div id="appPage">
+
+        <!-- الهيدر -->
+        <div class="header">
+            <div class="user-info">
+                👋 <span data-i18n="welcome">مرحباً</span>، <span id="userNameDisplay">...</span>
+                <span class="badge" id="permissionDisplay"></span>
+                <span class="role-badge" id="roleBadge"></span>
+                <span class="badge" id="firebaseStatus" style="background:#48bb78;color:white;">🔥 متصل</span>
+            </div>
+            <div class="btn-group">
+                <button class="btn-language" onclick="toggleLanguage()"><i class="fas fa-language"></i> <span id="langToggle">EN</span></button>
+                <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span data-i18n="logout">خروج</span></button>
+                <button class="btn-print-report" onclick="printReport()"><i class="fas fa-print"></i> <span data-i18n="printReport">طباعة التقرير</span></button>
+                <button class="btn-save" onclick="saveData()"><i class="fas fa-save"></i> <span data-i18n="save">حفظ</span></button>
+                <button class="btn-reset" onclick="resetData()"><i class="fas fa-undo"></i> <span data-i18n="reset">إعادة تعيين</span></button>
+                <button class="btn-sync" onclick="syncWithFirebase()"><i class="fas fa-cloud-upload-alt"></i> <span data-i18n="sync">مزامنة</span></button>
+                <div class="export-dropdown">
+                    <button class="btn-export"><i class="fas fa-file-export"></i> <span data-i18n="export">تصدير</span> ▾</button>
+                    <div class="export-dropdown-content">
+                        <button onclick="exportExcel()"><i class="fas fa-file-excel"></i> Excel</button>
+                        <button onclick="exportPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
+                        <button onclick="exportCSV()"><i class="fas fa-file-csv"></i> CSV</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- رسالة الحالة -->
+        <div id="statusMessage" class="status-message"></div>
+
+        <!-- التنبيهات -->
+        <div class="alerts-container" id="alertsContainer">
+            <div class="alert-title"><i class="fas fa-exclamation-triangle"></i> <span data-i18n="alertsTitle">تنبيهات هامة</span></div>
+            <div id="alertsList"></div>
+        </div>
+
+        <!-- شريط التبويب -->
+        <div class="tab-bar">
+            <button class="active" onclick="showPage('dashboardPage', this)"><i class="fas fa-table"></i> <span data-i18n="tabData">جدول البيانات</span></button>
+            <button onclick="showPage('reportPage', this)"><i class="fas fa-chart-bar"></i> <span data-i18n="tabReports">التقارير</span></button>
+            <button onclick="showPage('auditPage', this)"><i class="fas fa-history"></i> <span data-i18n="tabAudit">سجل التعديلات</span></button>
+            <button onclick="showPage('settingsPage', this)"><i class="fas fa-cog"></i> <span data-i18n="tabSettings">الإعدادات</span></button>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- تبويب: لوحة التحكم (الجدول) -->
+        <!-- ============================================================ -->
+        <div id="dashboardPage" class="page-section active">
+            <div class="filter-toolbar">
+                <div class="filter-group">
+                    <label data-i18n="search">🔍 بحث:</label>
+                    <input type="text" id="searchInput" placeholder="رقم الفيلا..." oninput="applyFilters()">
+                </div>
+                <div class="filter-group">
+                    <label data-i18n="stageFilter">📌 المرحلة:</label>
+                    <select id="stageFilter" onchange="applyFilters()">
+                        <option value="all" data-i18n="allStages">جميع المراحل</option>
+                        <option value="الاولي">المرحلة الأولى</option>
+                        <option value="الثانية">المرحلة الثانية</option>
+                        <option value="الثالثة">المرحلة الثالثة</option>
+                        <option value="الرابعة">المرحلة الرابعة</option>
+                        <option value="العينة">العينة</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label data-i18n="progressFilter">📊 نسبة الإنجاز:</label>
+                    <select id="progressFilter" onchange="applyFilters()">
+                        <option value="all" data-i18n="allProgress">الكل</option>
+                        <option value="high" data-i18n="highProgress">عالي (≥ 70%)</option>
+                        <option value="medium" data-i18n="mediumProgress">متوسط (40-69%)</option>
+                        <option value="low" data-i18n="lowProgress">منخفض (&lt; 40%)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label data-i18n="completeFilter">✅ مكتملة بالكامل:</label>
+                    <select id="completeFilter" onchange="applyFilters()">
+                        <option value="all" data-i18n="allComplete">الكل</option>
+                        <option value="complete" data-i18n="completeOnly">مكتملة فقط</option>
+                        <option value="incomplete" data-i18n="incompleteOnly">غير مكتملة</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table id="projectTable">
+                    <thead>
+                        <tr>
+                            <th style="min-width:35px;">#</th>
+                            <th style="min-width:65px;" data-i18n="villaNumber">رقم الفيلا</th>
+                            <th style="min-width:70px;" data-i18n="stageNumber">رقم المرحلة</th>
+                            <th style="min-width:60px;" data-i18n="col0">تأسيس<br><span class="sub">الكهرباء</span></th>
+                            <th style="min-width:60px;" data-i18n="col1">تأسيس<br><span class="sub">السباكة</span></th>
+                            <th style="min-width:60px;background:#38a169;" data-i18n="col2">إذن<br><span class="sub">اللياسة ⚡</span></th>
+                            <th style="min-width:60px;" data-i18n="col3">انتهاء من<br><span class="sub">اللياسة</span></th>
+                            <th style="min-width:60px;" data-i18n="col4">أسلاك<br><span class="sub">أرضيات وأسقف</span></th>
+                            <th style="min-width:60px;" data-i18n="col5">سباكة<br><span class="sub">أسقف</span></th>
+                            <th style="min-width:60px;" data-i18n="col6">عزل<br><span class="sub">مواسير الصرف</span></th>
+                            <th style="min-width:60px;background:#38a169;" data-i18n="col7">اذن<br><span class="sub">الاسقف ⚡</span></th>
+                            <th style="min-width:60px;" data-i18n="col8">سباكة<br><span class="sub">أرضيات</span></th>
+                            <th style="min-width:60px;background:#38a169;" data-i18n="col9">اذن<br><span class="sub">الارضيات ⚡</span></th>
+                            <th style="min-width:60px;" data-i18n="col10">صبة<br><span class="sub">السكريت</span></th>
+                            <th style="min-width:60px;" data-i18n="col11">أسقف<br><span class="sub">جبسية</span></th>
+                            <th style="min-width:60px;" data-i18n="col12">دهانات<br><span class="sub">وجه أول</span></th>
+                            <th style="min-width:60px;" data-i18n="col13">تشطيب<br><span class="sub">كهرباء</span></th>
+                            <th style="min-width:60px;" data-i18n="col14">تشطيب<br><span class="sub">سباكة</span></th>
+                            <th style="min-width:60px;" data-i18n="col15">كابلات</th>
+                            <th style="min-width:60px;" data-i18n="col16">سباكة<br><span class="sub">موقع عام</span></th>
+                            <th style="min-width:60px;" data-i18n="col17">صبية<br><span class="sub">موقع عام</span></th>
+                        </tr>
+                        <tr style="background:#4a5568;font-size:9px;color:#e2e8f0;">
+                            <th colspan="3" style="background:#4a5568;" data-i18n="indicators">المؤشرات</th>
+                            <th>E1</th><th>P1</th><th style="background:#38a169;">E1+P1</th>
+                            <th>P2</th><th>E2</th><th>P3</th><th>P4</th>
+                            <th style="background:#38a169;">E2+P4</th>
+                            <th>P5</th><th style="background:#38a169;">E2+P5</th>
+                            <th>P6</th><th>P7</th><th>P8</th>
+                            <th>E3</th><th>P9</th><th>E4</th><th>P10</th><th>P11</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                    <tfoot id="tableFooter"></tfoot>
+                </table>
+            </div>
+
+            <div class="footer-stats">
+                <div class="stat-item"><span class="label" data-i18n="totalVillas">📋 إجمالي الفلل:</span><span class="value blue" id="totalVillas">0</span></div>
+                <div class="stat-item"><span class="label" data-i18n="totalProgress">✅ نسبة الإنجاز الكلية:</span><span class="value green" id="totalProgress">0%</span></div>
+                <div class="stat-item"><span class="label" data-i18n="completedTasks">📌 عدد المهام المكتملة:</span><span class="value orange" id="completedTasks">0</span><span class="label" data-i18n="from">من</span><span class="value blue" id="totalTasks">0</span></div>
+                <div class="stat-item"><span class="label" data-i18n="completeVillas">🏆 الفلل المكتملة بالكامل:</span><span class="value green" id="completeVillas">0</span></div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- تبويب: التقارير -->
+        <!-- ============================================================ -->
+        <div id="reportPage" class="page-section">
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label for="stageSelect" data-i18n="selectStages">📌 المراحل (اختر متعدد):</label>
+                    <select id="stageSelect" multiple>
+                        <option value="all" selected data-i18n="allStages">--- جميع المراحل ---</option>
+                        <option value="الاولي">المرحلة الأولى</option>
+                        <option value="الثانية">المرحلة الثانية</option>
+                        <option value="الثالثة">المرحلة الثالثة</option>
+                        <option value="الرابعة">المرحلة الرابعة</option>
+                        <option value="العينة">العينة</option>
+                    </select>
+                    <span style="font-size:12px;color:#718096;">🔄 اضغط Ctrl (أو ⌘) للاختيار المتعدد</span>
+                </div>
+
+                <div class="filter-group">
+                    <label for="taskSelect" data-i18n="selectTasks">📋 المهام (اختر متعدد):</label>
+                    <select id="taskSelect" multiple>
+                        <option value="all" selected data-i18n="allTasks">--- جميع المهام ---</option>
+                        <option value="0">تأسيس الكهرباء</option>
+                        <option value="1">تأسيس السباكة</option>
+                        <option value="2">إذن اللياسة</option>
+                        <option value="3">انتهاء من اللياسة</option>
+                        <option value="4">أسلاك أرضيات وأسقف</option>
+                        <option value="5">سباكة أسقف</option>
+                        <option value="6">عزل مواسير الصرف</option>
+                        <option value="7">اذن الاسقف</option>
+                        <option value="8">سباكة أرضيات</option>
+                        <option value="9">اذن الارضيات</option>
+                        <option value="10">صبة السكريت</option>
+                        <option value="11">أسقف جبسية</option>
+                        <option value="12">دهانات وجه أول</option>
+                        <option value="13">تشطيب كهرباء</option>
+                        <option value="14">تشطيب سباكة</option>
+                        <option value="15">كابلات</option>
+                        <option value="16">سباكة موقع عام</option>
+                        <option value="17">صبية موقع عام</option>
+                    </select>
+                    <span style="font-size:12px;color:#718096;">🔄 اضغط Ctrl (أو ⌘) للاختيار المتعدد</span>
+                </div>
+
+                <button onclick="generateReport()" data-i18n="showReport">🔍 عرض التقرير</button>
+            </div>
+
+            <div class="chart-container" id="chartContainer">
+                <div class="chart-box">
+                    <h4 data-i18n="chartProgress">📊 نسبة الإنجاز لكل مهمة</h4>
+                    <canvas id="progressChart"></canvas>
+                </div>
+                <div class="chart-box">
+                    <h4 data-i18n="chartStages">📈 توزيع الفلل حسب المراحل</h4>
+                    <canvas id="stageChart"></canvas>
+                </div>
+            </div>
+
+            <div id="reportContent">
+                <div class="summary-cards">
+                    <div class="summary-card"><div class="label" data-i18n="totalVillas">📋 إجمالي الفلل</div><div class="value blue" id="totalVillasCard">-</div></div>
+                    <div class="summary-card"><div class="label" data-i18n="totalProgress">✅ نسبة الإنجاز الكلية</div><div class="value green" id="totalProgressCard">-</div></div>
+                    <div class="summary-card"><div class="label" data-i18n="completedTasks">📌 إجمالي المهام المكتملة</div><div class="value orange" id="totalCompletedCard">-</div></div>
+                    <div class="summary-card"><div class="label" data-i18n="completeVillas">🏆 الفلل المكتملة</div><div class="value green" id="completeVillasCard">-</div></div>
+                </div>
+                <div class="table-wrapper" id="reportTableWrapper">
+                    <p class="no-data" data-i18n="reportInstructions">📊 اختر المراحل والمهام المطلوبة واضغط "عرض التقرير".</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- تبويب: سجل التعديلات -->
+        <!-- ============================================================ -->
+        <div id="auditPage" class="page-section">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:15px;">
+                <h3><i class="fas fa-history"></i> <span data-i18n="auditLog">سجل التعديلات</span></h3>
+                <button class="btn-reset" onclick="clearAuditLog()" style="padding:6px 15px;font-size:12px;">
+                    <i class="fas fa-trash"></i> <span data-i18n="clearLog">مسح السجل</span>
+                </button>
+            </div>
+            <div class="audit-log-container" id="auditLogContainer">
+                <p style="color:#718096;text-align:center;padding:20px;" data-i18n="noLogs">لا توجد تعديلات مسجلة حتى الآن.</p>
+            </div>
+            <div style="margin-top:10px;font-size:12px;color:#718096;">
+                <i class="fas fa-info-circle"></i> <span data-i18n="auditInfo">يتم تسجيل جميع التعديلات على البيانات مع اسم المستخدم والتاريخ.</span>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- تبويب: الإعدادات -->
+        <!-- ============================================================ -->
+        <div id="settingsPage" class="page-section">
+            <h3><i class="fas fa-fire"></i> <span>إعدادات Firebase</span></h3>
+            <div class="sync-settings">
+                <h4><i class="fas fa-database"></i> قاعدة البيانات</h4>
+                <div class="form-row">
+                    <label>📊 الحالة:</label>
+                    <span id="firebaseConnectionStatus" style="font-weight:bold;color:#38a169;">✅ متصل</span>
+                </div>
+                <div class="form-row">
+                    <label>📁 المسار:</label>
+                    <span style="font-weight:600;">teel-project-4ffd0 / projectData</span>
+                </div>
+                <div class="form-row" style="margin-top:10px;">
+                    <button onclick="syncWithFirebase()" style="background:#38a169;">🔄 مزامنة الآن</button>
+                    <button onclick="loadFromFirebase()" style="background:#2b6cb0;">📥 تحميل من Firebase</button>
+                    <button onclick="saveToFirebase()" style="background:#9f7aea;">📤 حفظ إلى Firebase</button>
+                    <button onclick="clearFirebaseData()" style="background:#fc8181;">🗑️ مسح البيانات</button>
+                </div>
+                <div style="margin-top:10px;font-size:12px;color:#718096;">
+                    <i class="fas fa-info-circle"></i>
+                    يتم حفظ البيانات تلقائياً في Firebase عند كل تعديل.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- جافا سكريبت -->
+    <!-- ============================================================ -->
+    <script>
+        // ================================================================
+        // 🔥 تهيئة Firebase
+        // ================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDBerLb1LA_CsdbuafZpuvH4deJZ-dDoZI",
+            authDomain: "teel-project-4ffd0.firebaseapp.com",
+            databaseURL: "https://teel-project-4ffd0-default-rtdb.firebaseio.com",
+            projectId: "teel-project-4ffd0",
+            storageBucket: "teel-project-4ffd0.firebasestorage.app",
+            messagingSenderId: "224352489131",
+            appId: "1:224352489131:web:44e2a37d5e399f289231ee"
+        };
+
+        // تهيئة Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let isFirebaseConnected = false;
+
+        // التحقق من الاتصال
+        const connectedRef = database.ref('.info/connected');
+        connectedRef.on('value', (snap) => {
+            isFirebaseConnected = snap.val() === true;
+            const statusEl = document.getElementById('firebaseStatus');
+            const connStatus = document.getElementById('firebaseConnectionStatus');
+            if (isFirebaseConnected) {
+                statusEl.textContent = '🔥 متصل';
+                statusEl.style.background = '#48bb78';
+                statusEl.style.color = 'white';
+                if (connStatus) {
+                    connStatus.textContent = '✅ متصل';
+                    connStatus.style.color = '#38a169';
+                }
+                showStatus('✅ متصل بقاعدة Firebase بنجاح.', 'success');
+                // تحميل البيانات تلقائياً عند الاتصال
+                loadFromFirebase();
+            } else {
+                statusEl.textContent = '⚠️ غير متصل';
+                statusEl.style.background = '#fc8181';
+                statusEl.style.color = 'white';
+                if (connStatus) {
+                    connStatus.textContent = '❌ غير متصل';
+                    connStatus.style.color = '#e53e3e';
+                }
+                showStatus('⚠️ غير متصل بقاعدة Firebase.', 'warning');
+            }
+        });
+
+        // ================================================================
+        // 0. اللغة - الترجمة
+        // ================================================================
+        let currentLang = 'ar';
+
+        const translations = {
+            ar: {
+                appTitle: 'نظام متابعة المشروع',
+                appSubtitle: 'تيل - منصة إدارة المشاريع المتطورة',
+                selectUser: '👤 اختر المستخدم',
+                selectOption: '-- اختر --',
+                password: '🔑 كلمة المرور',
+                login: '🚀 دخول',
+                passwordsLabel: '📌 كلمات المرور الرمزية:',
+                welcome: 'مرحباً',
+                logout: 'خروج',
+                printReport: 'طباعة التقرير',
+                save: 'حفظ',
+                reset: 'إعادة تعيين',
+                sync: 'مزامنة',
+                export: 'تصدير',
+                alertsTitle: 'تنبيهات هامة',
+                tabData: 'جدول البيانات',
+                tabReports: 'التقارير',
+                tabAudit: 'سجل التعديلات',
+                tabSettings: 'الإعدادات',
+                search: '🔍 بحث:',
+                stageFilter: '📌 المرحلة:',
+                allStages: 'جميع المراحل',
+                progressFilter: '📊 نسبة الإنجاز:',
+                allProgress: 'الكل',
+                highProgress: 'عالي (≥ 70%)',
+                mediumProgress: 'متوسط (40-69%)',
+                lowProgress: 'منخفض (< 40%)',
+                completeFilter: '✅ مكتملة بالكامل:',
+                allComplete: 'الكل',
+                completeOnly: 'مكتملة فقط',
+                incompleteOnly: 'غير مكتملة',
+                totalVillas: '📋 إجمالي الفلل:',
+                totalProgress: '✅ نسبة الإنجاز الكلية:',
+                completedTasks: '📌 عدد المهام المكتملة:',
+                from: 'من',
+                completeVillas: '🏆 الفلل المكتملة بالكامل:',
+                selectStages: '📌 المراحل (اختر متعدد):',
+                selectTasks: '📋 المهام (اختر متعدد):',
+                allTasks: '--- جميع المهام ---',
+                showReport: '🔍 عرض التقرير',
+                chartProgress: '📊 نسبة الإنجاز لكل مهمة',
+                chartStages: '📈 توزيع الفلل حسب المراحل',
+                reportInstructions: '📊 اختر المراحل والمهام المطلوبة واضغط "عرض التقرير".',
+                auditLog: 'سجل التعديلات',
+                clearLog: 'مسح السجل',
+                noLogs: 'لا توجد تعديلات مسجلة حتى الآن.',
+                auditInfo: 'يتم تسجيل جميع التعديلات على البيانات مع اسم المستخدم والتاريخ.',
+                settingsTitle: 'إعدادات المزامنة مع Google Sheets',
+                spreadsheetId: '📄 معرف الجدول:',
+                sheetName: '📋 اسم الورقة:',
+                apiKey: '🔑 مفتاح API:',
+                saveSettings: '💾 حفظ الإعدادات',
+                testConnection: '🔗 اختبار الاتصال',
+                syncNow: '🔄 مزامنة الآن',
+                syncHelp: 'لمزامنة البيانات مع Google Sheets، تحتاج إلى:',
+                syncHelp1: '1. تفعيل Google Sheets API في Google Cloud Console',
+                syncHelp2: '2. إنشاء مفتاح API أو حساب خدمة (Service Account)',
+                syncHelp3: '3. مشاركة الجدول مع البريد الإلكتروني للحساب الخدمة',
+                villaNumber: 'رقم الفيلا',
+                stageNumber: 'رقم المرحلة',
+                indicators: 'المؤشرات',
+                col0: 'تأسيس<br><span class="sub">الكهرباء</span>',
+                col1: 'تأسيس<br><span class="sub">السباكة</span>',
+                col2: 'إذن<br><span class="sub">اللياسة ⚡</span>',
+                col3: 'انتهاء من<br><span class="sub">اللياسة</span>',
+                col4: 'أسلاك<br><span class="sub">أرضيات وأسقف</span>',
+                col5: 'سباكة<br><span class="sub">أسقف</span>',
+                col6: 'عزل<br><span class="sub">مواسير الصرف</span>',
+                col7: 'اذن<br><span class="sub">الاسقف ⚡</span>',
+                col8: 'سباكة<br><span class="sub">أرضيات</span>',
+                col9: 'اذن<br><span class="sub">الارضيات ⚡</span>',
+                col10: 'صبة<br><span class="sub">السكريت</span>',
+                col11: 'أسقف<br><span class="sub">جبسية</span>',
+                col12: 'دهانات<br><span class="sub">وجه أول</span>',
+                col13: 'تشطيب<br><span class="sub">كهرباء</span>',
+                col14: 'تشطيب<br><span class="sub">سباكة</span>',
+                col15: 'كابلات',
+                col16: 'سباكة<br><span class="sub">موقع عام</span>',
+                col17: 'صبية<br><span class="sub">موقع عام</span>'
+            },
+            en: {
+                appTitle: 'Project Management System',
+                appSubtitle: 'Tail - Advanced Project Management Platform',
+                selectUser: '👤 Select User',
+                selectOption: '-- Select --',
+                password: '🔑 Password',
+                login: '🚀 Login',
+                passwordsLabel: '📌 Sample Passwords:',
+                welcome: 'Welcome',
+                logout: 'Logout',
+                printReport: 'Print Report',
+                save: 'Save',
+                reset: 'Reset',
+                sync: 'Sync',
+                export: 'Export',
+                alertsTitle: 'Important Alerts',
+                tabData: 'Data Table',
+                tabReports: 'Reports',
+                tabAudit: 'Audit Log',
+                tabSettings: 'Settings',
+                search: '🔍 Search:',
+                stageFilter: '📌 Stage:',
+                allStages: 'All Stages',
+                progressFilter: '📊 Progress:',
+                allProgress: 'All',
+                highProgress: 'High (≥ 70%)',
+                mediumProgress: 'Medium (40-69%)',
+                lowProgress: 'Low (< 40%)',
+                completeFilter: '✅ Complete:',
+                allComplete: 'All',
+                completeOnly: 'Complete Only',
+                incompleteOnly: 'Incomplete Only',
+                totalVillas: '📋 Total Villas:',
+                totalProgress: '✅ Overall Progress:',
+                completedTasks: '📌 Completed Tasks:',
+                from: 'of',
+                completeVillas: '🏆 Completed Villas:',
+                selectStages: '📌 Stages (Multi-select):',
+                selectTasks: '📋 Tasks (Multi-select):',
+                allTasks: '--- All Tasks ---',
+                showReport: '🔍 Show Report',
+                chartProgress: '📊 Task Progress',
+                chartStages: '📈 Villa Distribution by Stage',
+                reportInstructions: '📊 Select stages and tasks, then click "Show Report".',
+                auditLog: 'Audit Log',
+                clearLog: 'Clear Log',
+                noLogs: 'No logs recorded yet.',
+                auditInfo: 'All data changes are logged with user name and timestamp.',
+                settingsTitle: 'Google Sheets Sync Settings',
+                spreadsheetId: '📄 Spreadsheet ID:',
+                sheetName: '📋 Sheet Name:',
+                apiKey: '🔑 API Key:',
+                saveSettings: '💾 Save Settings',
+                testConnection: '🔗 Test Connection',
+                syncNow: '🔄 Sync Now',
+                syncHelp: 'To sync with Google Sheets, you need:',
+                syncHelp1: '1. Enable Google Sheets API in Google Cloud Console',
+                syncHelp2: '2. Create an API Key or Service Account',
+                syncHelp3: '3. Share the spreadsheet with the service account email',
+                villaNumber: 'Villa #',
+                stageNumber: 'Stage #',
+                indicators: 'Indicators',
+                col0: 'Electrical<br><span class="sub">Foundation</span>',
+                col1: 'Plumbing<br><span class="sub">Foundation</span>',
+                col2: 'Plaster<br><span class="sub">Approval ⚡</span>',
+                col3: 'Plaster<br><span class="sub">Completion</span>',
+                col4: 'Floor/Ceiling<br><span class="sub">Wiring</span>',
+                col5: 'Ceiling<br><span class="sub">Plumbing</span>',
+                col6: 'Drain Pipe<br><span class="sub">Insulation</span>',
+                col7: 'Ceiling<br><span class="sub">Approval ⚡</span>',
+                col8: 'Floor<br><span class="sub">Plumbing</span>',
+                col9: 'Floor<br><span class="sub">Approval ⚡</span>',
+                col10: 'Screed<br><span class="sub">Pour</span>',
+                col11: 'Gypsum<br><span class="sub">Ceilings</span>',
+                col12: 'First Coat<br><span class="sub">Paint</span>',
+                col13: 'Electrical<br><span class="sub">Finishing</span>',
+                col14: 'Plumbing<br><span class="sub">Finishing</span>',
+                col15: 'Cables',
+                col16: 'Site<br><span class="sub">Plumbing</span>',
+                col17: 'Site<br><span class="sub">Screed</span>'
+            }
+        };
+
+        function toggleLanguage() {
+            currentLang = (currentLang === 'ar') ? 'en' : 'ar';
+            document.body.className = (currentLang === 'en') ? 'lang-en' : '';
+            document.getElementById('langToggle').textContent = (currentLang === 'ar') ? 'EN' : 'AR';
+            applyTranslations();
+            localStorage.setItem('lang', currentLang);
+        }
+
+        function applyTranslations() {
+            const t = translations[currentLang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) {
+                    el.innerHTML = t[key];
+                }
+            });
+            document.title = t.appTitle;
+        }
+
+        // ================================================================
+        // 1. بيانات المستخدمين
+        // ================================================================
+        const users = {
+            'مدير تنفيذي': { password: 'admin123', permissions: 'all', role: 'مدير تنفيذي' },
+            'مهندس مدني': { password: 'civil123', permissions: 'civil', role: 'مهندس مدني' },
+            'مهندس ميكانيكا': { password: 'mech123', permissions: 'mech', role: 'مهندس ميكانيكا' },
+            'مهندس كهرباء': { password: 'elec123', permissions: 'elec', role: 'مهندس كهرباء' }
+        };
+
+        // ================================================================
+        // 2. أسماء الأعمدة
+        // ================================================================
+        const columnNames = [
+            'تأسيس الكهرباء', 'تأسيس السباكة', 'إذن اللياسة', 'انتهاء من اللياسة',
+            'أسلاك أرضيات وأسقف', 'سباكة أسقف', 'عزل مواسير الصرف', 'اذن الاسقف',
+            'سباكة أرضيات', 'اذن الارضيات', 'صبة السكريت', 'أسقف جبسية',
+            'دهانات وجه أول', 'تشطيب كهرباء', 'تشطيب سباكة', 'كابلات',
+            'سباكة موقع عام', 'صبية موقع عام'
+        ];
+
+        const autoColumns = {
+            2: { depends: [0, 1], label: 'إذن اللياسة' },
+            7: { depends: [4, 6], label: 'اذن الاسقف' },
+            9: { depends: [4, 8], label: 'اذن الارضيات' }
+        };
+
+        // ================================================================
+        // 3. الصلاحيات
+        // ================================================================
+        const roleColumnMap = {
+            'all': columnNames.map((_, i) => i),
+            'civil': [3, 10, 11, 12, 17],
+            'mech': [1, 2, 5, 6, 7, 8, 14, 16],
+            'elec': [0, 4, 9, 13, 15]
+        };
+
+        // ================================================================
+        // 4. البيانات الخام
+        // ================================================================
+        const rawData = [
+            { villa: 'A1', stage: 'الرابعة', values: [false, false, false, false, false, false, false, false, false, false,
+                    false, false, false, false, false, false, false, false
+                ] },
+            { villa: 'A2', stage: 'الرابعة', values: [true, false, false, false, false, false, false, false, false, false,
+                    false, false, false, false, false, false, false, false
+                ] },
+            { villa: 'A3', stage: 'الرابعة', values: [false, false, false, false, false, false, false, false, false, false,
+                    false, false, false, false, false, false, false, false
+                ] },
+            { villa: 'A4', stage: 'الرابعة', values: [false, false, false, false, false, false, false, false, false, false,
+                    false, false, false, false, false, false, false, false
+                ] },
+            { villa: 'A5', stage: 'الرابعة', values: [true, false, false, false, false, false, false, false, false, false,
+                    false, false, false, false, false, false, false, false
+                ] },
+            { villa: 'A6', stage: 'الرابعة', values: [true, false, false, false, false, false, false, false, false, false,
+                    false, false, false, false, false, false, false, false
+                ] },
+            { villa: 'A7', stage: 'الثانية', values: [true, true, false, false, false, false, true, false, false, false,
+                    true, false, false, false, false, false, false, false
+                ] },
+            { villa: 'A8', stage: 'الاولي', values: [true, true, true, true, true, true, true, false, false, true, true,
+                    false, false, false, false, false, false, false
+                ] },
+            { villa: 'A9', stage: 'الرابعة', values: [true, true, false, false, false, false, true, false, false, false,
+                    true, false, false, false, false, false, false, false
+                ] },
+            { villa: 'A10', stage: 'الثانية', values: [true, true, false, false, false, false, true, false, false, false,
+                    true, false, false, false, false, false, false, false
+                ] },
+            { villa: 'B1', stage: 'الاولي', values: [true, true, true, true, true, true, true, true, true, true, true,
+                    false, false, false, false, false, true, false
+                ] },
+            { villa: 'B2', stage: 'العينة', values: [true, true, true, true, true, true, true, true, true, true, true,
+                    false, false, false, false, false, true, false
+                ] },
+            { villa: 'B3', stage: 'الثانية', values: [true, true, false, false, false, false, true, false, false, false,
+                    true, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B4', stage: 'الاولي', values: [true, true, true, true, true, true, true, true, true, true, true,
+                    false, false, false, false, false, true, false
+                ] },
+            { villa: 'B5', stage: 'الاولي', values: [true, true, false, false, true, true, true, true, true, true, true,
+                    false, false, false, false, false, true, false
+                ] },
+            { villa: 'B6', stage: 'الاولي', values: [true, true, true, true, true, true, true, true, true, true, true,
+                    false, false, false, false, false, true, false
+                ] },
+            { villa: 'B7', stage: 'الاولي', values: [true, true, true, true, false, false, true, true, false, false, true,
+                    false, false, false, false, false, true, false
+                ] },
+            { villa: 'B8', stage: 'الثالثة', values: [true, true, false, false, false, false, true, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B9', stage: 'الثالثة', values: [true, true, false, false, false, false, true, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B10', stage: 'الثالثة', values: [true, true, false, false, false, false, true, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B11', stage: 'الثالثة', values: [true, true, false, false, false, false, true, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B12', stage: 'الثالثة', values: [true, true, false, false, false, false, true, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B13', stage: 'الرابعة', values: [true, true, false, false, false, false, true, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B14', stage: 'الرابعة', values: [true, true, false, false, false, false, true, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B15', stage: 'الثالثة', values: [true, true, true, true, false, false, true, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B16', stage: 'الثالثة', values: [true, true, true, true, false, false, true, false, false, false,
+                    false, false, false, false, false, false, false, false
+                ] },
+            { villa: 'B17', stage: 'الثالثة', values: [true, true, true, true, true, true, true, false, false, false,
+                    false, false, false, false, false, false, false, false
+                ] },
+            { villa: 'B18', stage: 'الثانية', values: [true, true, true, true, true, true, true, false, false, true, true,
+                    false, false, false, false, false, false, false
+                ] },
+            { villa: 'B19', stage: 'الاولي', values: [true, true, true, true, true, true, true, true, true, true, true,
+                    false, false, false, false, false, true, false
+                ] },
+            { villa: 'B20', stage: 'الثانية', values: [true, true, true, true, true, false, false, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B21', stage: 'الثانية', values: [true, true, true, true, true, false, false, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B22', stage: 'الاولي', values: [true, true, false, false, false, false, true, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B23', stage: 'الثالثة', values: [true, true, true, true, false, false, true, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B24', stage: 'الاولي', values: [true, true, true, true, true, true, true, true, true, false, false,
+                    false, false, false, false, false, true, false
+                ] },
+            { villa: 'B25', stage: 'الثانية', values: [true, true, false, false, false, false, true, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B26', stage: 'الثانية', values: [true, true, false, false, false, false, true, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B27', stage: 'الثانية', values: [true, true, false, false, false, false, true, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B28', stage: 'الثانية', values: [true, true, true, true, true, true, true, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B29', stage: 'الثالثة', values: [true, true, true, true, false, false, true, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B30', stage: 'الثالثة', values: [true, true, false, false, false, false, true, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B31', stage: 'الثانية', values: [true, true, false, false, false, false, false, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B32', stage: 'الثانية', values: [true, true, false, false, false, false, true, false, false, false,
+                    false, false, false, false, false, false, true, false
+                ] },
+            { villa: 'B33', stage: 'الاولي', values: [true, true, true, true, true, true, true, true, true, true, true,
+                    false, false, false, false, false, false, false
+                ] },
+            { villa: 'B34', stage: 'الاولي', values: [true, true, true, true, true, true, true, false, false, true, true,
+                    false, false, false, false, false, false, false
+                ] },
+            { villa: 'B35', stage: 'الاولي', values: [true, true, true, true, true, true, true, false, false, true, true,
+                    false, false, false, false, false, false, false
+                ] },
+            { villa: 'B36', stage: 'الثالثة', values: [true, true, false, false, false, false, false, false, false, false,
+                    false, false, false, false, false, false, false, false
+                ] }
+        ];
+
+        // ================================================================
+        // 5. سجل التعديلات
+        // ================================================================
+        let auditLog = [];
+
+        function loadAuditLog() {
+            const saved = localStorage.getItem('auditLog');
+            if (saved) {
+                try { auditLog = JSON.parse(saved); } catch (e) {}
+            }
+        }
+
+        function saveAuditLog() {
+            try { localStorage.setItem('auditLog', JSON.stringify(auditLog)); } catch (e) {}
+        }
+
+        function addAuditEntry(action, details) {
+            const entry = {
+                timestamp: new Date().toLocaleString('ar-SA'),
+                user: currentUser || 'غير معروف',
+                action: action,
+                details: details
+            };
+            auditLog.unshift(entry);
+            if (auditLog.length > 1000) auditLog.pop();
+            saveAuditLog();
+            renderAuditLog();
+        }
+
+        function renderAuditLog() {
+            const container = document.getElementById('auditLogContainer');
+            if (auditLog.length === 0) {
+                container.innerHTML =
+                    '<p style="color:#718096;text-align:center;padding:20px;" data-i18n="noLogs">لا توجد تعديلات مسجلة حتى الآن.</p>';
+                return;
+            }
+            let html = '';
+            auditLog.slice(0, 50).forEach(entry => {
+                html += `
+                    <div class="log-entry">
+                        <span class="time"><i class="far fa-clock"></i> ${entry.timestamp}</span>
+                        <span class="user"><i class="fas fa-user"></i> ${entry.user}</span>
+                        <span class="action">${entry.action}</span>
+                        <span class="change">${entry.details}</span>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function clearAuditLog() {
+            if (confirm('⚠️ هل أنت متأكد من مسح سجل التعديلات بالكامل؟')) {
+                auditLog = [];
+                saveAuditLog();
+                renderAuditLog();
+                showStatus('🗑️ تم مسح سجل التعديلات.', 'info');
+            }
+        }
+
+        // ================================================================
+        // 6. دوال حساب القيم التلقائية
+        // ================================================================
+        function calculateAutoValues(values) {
+            const newValues = [...values];
+            newValues[2] = values[0] && values[1];
+            newValues[7] = values[4] && values[6];
+            newValues[9] = values[4] && values[8];
+            return newValues;
+        }
+
+        // ================================================================
+        // 7. تحميل البيانات
+        // ================================================================
+        let tableData = [];
+        let currentUser = '';
+        let currentUserRole = 'all';
+        let filteredData = [];
+
+        function loadData() {
+            // محاولة تحميل من localStorage أولاً
+            const saved = localStorage.getItem('projectData');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed) && parsed.length === rawData.length) {
+                        tableData = parsed.map(row => ({
+                            ...row,
+                            values: calculateAutoValues(row.values)
+                        }));
+                        return;
+                    }
+                } catch (e) {}
+            }
+            // استخدام البيانات الخام
+            tableData = rawData.map(row => ({
+                ...row,
+                values: calculateAutoValues(row.values)
+            }));
+        }
+
+        // ================================================================
+        // 8. دوال المساعدة
+        // ================================================================
+        function getRowProgress(row) {
+            let completed = 0,
+                total = 0;
+            row.values.forEach((val, idx) => {
+                if (!autoColumns[idx]) {
+                    total++;
+                    if (val === true) completed++;
+                }
+            });
+            return total > 0 ? (completed / total) * 100 : 0;
+        }
+
+        function isVillaComplete(row) {
+            let allDone = true;
+            row.values.forEach((val, idx) => {
+                if (!autoColumns[idx] && val === false) allDone = false;
+            });
+            return allDone;
+        }
+
+        function getEditableColumns() {
+            const allowed = roleColumnMap[currentUserRole] || [];
+            return allowed.filter(i => !autoColumns[i]);
+        }
+
+        // ================================================================
+        // 9. عرض الجدول
+        // ================================================================
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const stageFilter = document.getElementById('stageFilter').value;
+            const progressFilter = document.getElementById('progressFilter').value;
+            const completeFilter = document.getElementById('completeFilter').value;
+
+            filteredData = tableData.filter(row => {
+                if (searchTerm && !row.villa.toLowerCase().includes(searchTerm)) return false;
+                if (stageFilter !== 'all' && row.stage !== stageFilter) return false;
+                const progress = getRowProgress(row);
+                if (progressFilter === 'high' && progress < 70) return false;
+                if (progressFilter === 'medium' && (progress < 40 || progress >= 70)) return false;
+                if (progressFilter === 'low' && progress >= 40) return false;
+                const complete = isVillaComplete(row);
+                if (completeFilter === 'complete' && !complete) return false;
+                if (completeFilter === 'incomplete' && complete) return false;
+                return true;
+            });
+
+            renderTableData();
+            checkAlerts();
+        }
+
+        function renderTableData() {
+            const tbody = document.getElementById('tableBody');
+            const tfoot = document.getElementById('tableFooter');
+            tbody.innerHTML = '';
+            tfoot.innerHTML = '';
+
+            const editableIndices = getEditableColumns();
+            let totalCompleted = 0,
+                totalCells = 0,
+                completeVillas = 0;
+            const columnTotals = new Array(18).fill(0);
+            const columnCounts = new Array(18).fill(0);
+
+            const dataToShow = filteredData.length > 0 ? filteredData : tableData;
+
+            dataToShow.forEach((row, rowIndex) => {
+                const progress = getRowProgress(row);
+                const isComplete = isVillaComplete(row);
+                if (isComplete) completeVillas++;
+
+                const tr = document.createElement('tr');
+                if (progress < 40) tr.classList.add('row-low-progress');
+                if (isComplete) tr.classList.add('row-high-progress');
+
+                const tdNum = document.createElement('td');
+                tdNum.className = 'row-number';
+                tdNum.textContent = rowIndex + 1;
+                tr.appendChild(tdNum);
+
+                const tdVilla = document.createElement('td');
+                tdVilla.className = 'villa-name';
+                tdVilla.textContent = row.villa;
+                tr.appendChild(tdVilla);
+
+                const tdStage = document.createElement('td');
+                tdStage.className = 'stage-name';
+                tdStage.textContent = row.stage;
+                tr.appendChild(tdStage);
+
+                row.values.forEach((val, colIndex) => {
+                    const td = document.createElement('td');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = val === true;
+
+                    const isAuto = autoColumns[colIndex] !== undefined;
+                    const isEditable = !isAuto && editableIndices.includes(colIndex);
+
+                    if (isAuto) {
+                        checkbox.disabled = true;
+                        td.classList.add('auto-col');
+                        td.title = 'قيمة تلقائية';
+                    } else if (isEditable) {
+                        checkbox.disabled = false;
+                        td.classList.add('editable-col');
+                    } else {
+                        checkbox.disabled = true;
+                        td.classList.add('readonly-col');
+                    }
+
+                    if (!isAuto && isEditable) {
+                        checkbox.addEventListener('change', function() {
+                            const oldValue = tableData[rowIndex].values[colIndex];
+                            tableData[rowIndex].values[colIndex] = this.checked;
+                            const newValues = calculateAutoValues(tableData[rowIndex].values);
+                            tableData[rowIndex].values = newValues;
+
+                            const oldValText = oldValue ? '✔' : '✘';
+                            const newValText = this.checked ? '✔' : '✘';
+                            addAuditEntry(`تعديل ${columnNames[colIndex]}`,
+                                `الفيلا ${row.villa}: ${oldValText} → ${newValText}`);
+
+                            applyFilters();
+                            updateFooterStats();
+                            // حفظ تلقائي إلى Firebase
+                            saveToFirebase();
+                            showStatus(`✅ تم تحديث ${columnNames[colIndex]} للفيلا ${row.villa}`, 'success');
+                        });
+                    }
+
+                    td.appendChild(checkbox);
+                    tr.appendChild(td);
+
+                    if (!isAuto) {
+                        columnCounts[colIndex]++;
+                        if (val === true) {
+                            columnTotals[colIndex]++;
+                            totalCompleted++;
+                        }
+                        totalCells++;
+                    }
+                });
+
+                tbody.appendChild(tr);
+            });
+
+            // صف المجموع
+            if (dataToShow.length > 0) {
+                const trTotal = document.createElement('tr');
+                trTotal.className = 'total-row';
+
+                const tdNumTotal = document.createElement('td');
+                tdNumTotal.textContent = 'المجموع';
+                tdNumTotal.style.fontWeight = 'bold';
+                trTotal.appendChild(tdNumTotal);
+
+                const tdVillaTotal = document.createElement('td');
+                tdVillaTotal.textContent = dataToShow.length + ' فيلا';
+                tdVillaTotal.style.fontWeight = 'bold';
+                trTotal.appendChild(tdVillaTotal);
+
+                const tdStageTotal = document.createElement('td');
+                tdStageTotal.textContent = '-';
+                trTotal.appendChild(tdStageTotal);
+
+                for (let col = 0; col < 18; col++) {
+                    const td = document.createElement('td');
+                    const isAuto = autoColumns[col] !== undefined;
+
+                    if (isAuto) {
+                        const dep1 = autoColumns[col].depends[0];
+                        const dep2 = autoColumns[col].depends[1];
+                        const count1 = columnCounts[dep1] || 0;
+                        const count2 = columnCounts[dep2] || 0;
+                        const total1 = columnTotals[dep1] || 0;
+                        const total2 = columnTotals[dep2] || 0;
+                        const pct1 = count1 > 0 ? (total1 / count1) * 100 : 0;
+                        const pct2 = count2 > 0 ? (total2 / count2) * 100 : 0;
+                        const avgPct = (pct1 + pct2) / 2;
+                        td.textContent = Math.round(avgPct) + '%';
+                        td.style.background = '#38a169';
+                        td.style.color = 'white';
+                        td.style.fontWeight = 'bold';
+                    } else {
+                        const total = columnTotals[col] || 0;
+                        const count = columnCounts[col] || 0;
+                        const pct = count > 0 ? Math.round((total / count) * 100) : 0;
+                        td.textContent = total + '/' + count + ' (' + pct + '%)';
+                        td.style.fontWeight = 'bold';
+                    }
+                    trTotal.appendChild(td);
+                }
+                tfoot.appendChild(trTotal);
+            }
+
+            document.getElementById('totalVillas').textContent = dataToShow.length;
+            document.getElementById('totalTasks').textContent = totalCells;
+            document.getElementById('completedTasks').textContent = totalCompleted;
+            const progress = totalCells > 0 ? Math.round((totalCompleted / totalCells) * 100) : 0;
+            document.getElementById('totalProgress').textContent = progress + '%';
+            document.getElementById('completeVillas').textContent = completeVillas;
+        }
+
+        function updateFooterStats() {
+            applyFilters();
+        }
+
+        // ================================================================
+        // 10. التنبيهات الذكية
+        // ================================================================
+        function checkAlerts() {
+            const container = document.getElementById('alertsContainer');
+            const list = document.getElementById('alertsList');
+            let alerts = [];
+
+            tableData.forEach(row => {
+                const progress = getRowProgress(row);
+                if (progress < 30) {
+                    alerts.push(`⚠️ الفيلا ${row.villa} نسبة إنجازها منخفضة (${Math.round(progress)}%)`);
+                }
+                if (isVillaComplete(row)) {
+                    alerts.push(`🎉 الفيلا ${row.villa} مكتملة بالكامل!`);
+                }
+            });
+
+            const stageProgress = {};
+            tableData.forEach(row => {
+                if (!stageProgress[row.stage]) {
+                    stageProgress[row.stage] = { total: 0, completed: 0 };
+                }
+                const progress = getRowProgress(row);
+                stageProgress[row.stage].total++;
+                stageProgress[row.stage].completed += progress;
+            });
+            for (const [stage, data] of Object.entries(stageProgress)) {
+                const avg = data.completed / data.total;
+                if (avg < 40 && data.total >= 3) {
+                    alerts.push(`📌 المرحلة ${stage} نسبة إنجازها منخفضة (${Math.round(avg)}%)`);
+                }
+            }
+
+            if (alerts.length > 0) {
+                container.classList.add('active');
+                list.innerHTML = alerts.map(a => `<div class="alert-item">${a}</div>`).join('');
+            } else {
+                container.classList.remove('active');
+                list.innerHTML = '';
+            }
+        }
+
+        // ================================================================
+        // 11. التقارير مع المخططات
+        // ================================================================
+        let progressChartInstance = null;
+        let stageChartInstance = null;
+
+        function generateReport() {
+            const stageSelect = document.getElementById('stageSelect');
+            const taskSelect = document.getElementById('taskSelect');
+            const container = document.getElementById('reportContent');
+
+            let selectedStages = [];
+            for (let opt of stageSelect.options) {
+                if (opt.selected) {
+                    if (opt.value === 'all') { selectedStages = 'all'; break; }
+                    selectedStages.push(opt.value);
+                }
+            }
+            if (selectedStages.length === 0) selectedStages = 'all';
+
+            let selectedTasks = [];
+            for (let opt of taskSelect.options) {
+                if (opt.selected) {
+                    if (opt.value === 'all') { selectedTasks = 'all'; break; }
+                    selectedTasks.push(parseInt(opt.value));
+                }
+            }
+            if (selectedTasks.length === 0) selectedTasks = 'all';
+
+            let filtered = tableData;
+            if (selectedStages !== 'all') {
+                filtered = filtered.filter(row => selectedStages.includes(row.stage));
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="summary-cards">
+                        <div class="summary-card"><div class="label" data-i18n="totalVillas">📋 إجمالي الفلل</div><div class="value blue">0</div></div>
+                        <div class="summary-card"><div class="label" data-i18n="totalProgress">✅ نسبة الإنجاز</div><div class="value green">0%</div></div>
+                        <div class="summary-card"><div class="label" data-i18n="completedTasks">📌 المهام المكتملة</div><div class="value orange">0</div></div>
+                    </div>
+                    <div class="table-wrapper"><p class="no-data">🚫 لا توجد بيانات للمراحل المختارة.</p></div>
+                `;
+                return;
+            }
+
+            let taskIndices = [];
+            if (selectedTasks === 'all') {
+                taskIndices = columnNames.map((_, i) => i).filter(i => !autoColumns[i]);
+            } else {
+                taskIndices = selectedTasks;
+            }
+
+            const columnStats = [];
+            taskIndices.forEach(col => {
+                let completed = 0,
+                    total = 0;
+                filtered.forEach(row => {
+                    total++;
+                    if (row.values[col] === true) completed++;
+                });
+                columnStats.push({
+                    index: col,
+                    name: columnNames[col] || 'عمود ' + (col + 1),
+                    completed: completed,
+                    total: total,
+                    percentage: total > 0 ? Math.round((completed / total) * 100) : 0
+                });
+            });
+
+            let totalCompletedAll = 0,
+                totalTasksAll = 0,
+                completeVillas = 0;
+            filtered.forEach(row => {
+                taskIndices.forEach(col => {
+                    totalTasksAll++;
+                    if (row.values[col] === true) totalCompletedAll++;
+                });
+                if (isVillaComplete(row)) completeVillas++;
+            });
+            const overallProgress = totalTasksAll > 0 ? Math.round((totalCompletedAll / totalTasksAll) * 100) : 0;
+
+            const cardsHTML = `
+                <div class="summary-cards">
+                    <div class="summary-card"><div class="label" data-i18n="totalVillas">📋 عدد الفلل</div><div class="value blue">${filtered.length}</div></div>
+                    <div class="summary-card"><div class="label" data-i18n="totalProgress">✅ نسبة الإنجاز الكلية</div><div class="value green">${overallProgress}%</div></div>
+                    <div class="summary-card"><div class="label" data-i18n="completedTasks">📌 المهام المكتملة</div><div class="value orange">${totalCompletedAll} / ${totalTasksAll}</div></div>
+                    <div class="summary-card"><div class="label" data-i18n="completeVillas">🏆 الفلل المكتملة</div><div class="value green">${completeVillas}</div></div>
+                </div>
+            `;
+
+            let tableHTML = `
+                <div class="table-wrapper">
+                    <table>
+                        <thead><tr><th>#</th><th data-i18n="taskName">المهمة</th><th data-i18n="completedVillas">عدد الفلل المنفذة</th><th data-i18n="totalVillas">إجمالي الفلل</th><th data-i18n="progressPercent">نسبة الإنجاز</th><th data-i18n="progressBar">شريط التقدم</th></tr></thead>
+                        <tbody>
+            `;
+
+            columnStats.forEach((stat, index) => {
+                const color = stat.percentage >= 70 ? '#48bb78' : (stat.percentage >= 40 ? '#ecc94b' :
+                    '#fc8181');
+                tableHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td style="text-align:right;font-weight:600;">${stat.name}</td>
+                        <td>${stat.completed}</td>
+                        <td>${stat.total}</td>
+                        <td>${stat.percentage}%</td>
+                        <td>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width:${stat.percentage}%;background:${color};">${stat.percentage}%</div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            const totalCompletedCols = columnStats.reduce((sum, s) => sum + s.completed, 0);
+            const totalRowsCols = columnStats.reduce((sum, s) => sum + s.total, 0);
+            const totalProgressCols = totalRowsCols > 0 ? Math.round((totalCompletedCols / totalRowsCols) * 100) : 0;
+            const totalColor = totalProgressCols >= 70 ? '#48bb78' : (totalProgressCols >= 40 ? '#ecc94b' :
+                '#fc8181');
+
+            tableHTML += `
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2" style="text-align:center;">المجموع الكلي</td>
+                                <td>${totalCompletedCols}</td>
+                                <td>${totalRowsCols}</td>
+                                <td>${totalProgressCols}%</td>
+                                <td>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width:${totalProgressCols}%;background:${totalColor};">${totalProgressCols}%</div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            `;
+
+            container.innerHTML = cardsHTML + tableHTML;
+            renderCharts(columnStats, filtered);
+        }
+
+        function renderCharts(columnStats, filteredData) {
+            const ctx1 = document.getElementById('progressChart').getContext('2d');
+            if (progressChartInstance) progressChartInstance.destroy();
+
+            const labels = columnStats.map(s => s.name);
+            const data = columnStats.map(s => s.percentage);
+            const colors = data.map(d => d >= 70 ? '#48bb78' : (d >= 40 ? '#ecc94b' : '#fc8181'));
+
+            progressChartInstance = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: currentLang === 'ar' ? 'نسبة الإنجاز %' : 'Progress %',
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: colors.map(c => c),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { callback: function(value) { return value + '%'; } }
+                        }
+                    }
+                }
+            });
+
+            const ctx2 = document.getElementById('stageChart').getContext('2d');
+            if (stageChartInstance) stageChartInstance.destroy();
+
+            const stageCounts = {};
+            filteredData.forEach(row => {
+                stageCounts[row.stage] = (stageCounts[row.stage] || 0) + 1;
+            });
+            const stageLabels = Object.keys(stageCounts);
+            const stageData = Object.values(stageCounts);
+            const stageColors = ['#4299e1', '#48bb78', '#ed8936', '#9f7aea', '#fc8181'];
+
+            stageChartInstance = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: stageLabels,
+                    datasets: [{
+                        data: stageData,
+                        backgroundColor: stageColors.slice(0, stageData.length),
+                        borderColor: 'white',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // ================================================================
+        // 12. طباعة التقرير فقط
+        // ================================================================
+        function printReport() {
+            showPage('reportPage', document.querySelector('.tab-bar button:nth-child(2)'));
+            setTimeout(() => {
+                window.print();
+            }, 300);
+        }
+
+        // ================================================================
+        // 13. دوال Firebase
+        // ================================================================
+        function saveToFirebase() {
+            if (!isFirebaseConnected) {
+                showStatus('⚠️ غير متصل بقاعدة Firebase. سيتم الحفظ محلياً.', 'warning');
+                saveLocal();
+                return;
+            }
+
+            try {
+                // تحويل البيانات إلى صيغة JSON
+                const dataToSave = tableData.map(row => ({
+                    villa: row.villa,
+                    stage: row.stage,
+                    values: row.values
+                }));
+
+                // حفظ في Firebase
+                database.ref('projectData').set(dataToSave)
+                    .then(() => {
+                        showStatus('✅ تم حفظ البيانات في Firebase بنجاح.', 'success');
+                        document.getElementById('firebaseStatus').textContent = '🔥 متصل';
+                        document.getElementById('firebaseStatus').style.background = '#48bb78';
+                    })
+                    .catch((error) => {
+                        showStatus('❌ خطأ في حفظ Firebase: ' + error.message, 'error');
+                        // حفظ محلي كنسخة احتياطية
+                        saveLocal();
+                    });
+            } catch (e) {
+                showStatus('❌ خطأ: ' + e.message, 'error');
+                saveLocal();
+            }
+        }
+
+        function loadFromFirebase() {
+            if (!isFirebaseConnected) {
+                showStatus('⚠️ غير متصل بقاعدة Firebase. جارٍ التحميل من المخزن المحلي.', 'warning');
+                loadLocal();
+                return;
+            }
+
+            showStatus('⏳ جاري تحميل البيانات من Firebase...', 'info');
+
+            database.ref('projectData').once('value')
+                .then((snapshot) => {
+                    const data = snapshot.val();
+                    if (data && Array.isArray(data) && data.length > 0) {
+                        tableData = data.map(row => ({
+                            villa: row.villa || '',
+                            stage: row.stage || '',
+                            values: row.values ? calculateAutoValues(row.values) : new Array(18).fill(false)
+                        }));
+                        // حفظ نسخة محلية
+                        localStorage.setItem('projectData', JSON.stringify(tableData));
+                        applyFilters();
+                        showStatus(`✅ تم تحميل ${tableData.length} صف من Firebase.`, 'success');
+                    } else {
+                        showStatus('ℹ️ لا توجد بيانات في Firebase. جارٍ التحميل من المخزن المحلي.', 'info');
+                        loadLocal();
+                    }
+                })
+                .catch((error) => {
+                    showStatus('❌ خطأ في تحميل Firebase: ' + error.message, 'error');
+                    loadLocal();
+                });
+        }
+
+        function saveLocal() {
+            try {
+                localStorage.setItem('projectData', JSON.stringify(tableData));
+                showStatus('💾 تم الحفظ في المخزن المحلي.', 'info');
+            } catch (e) {
+                showStatus('❌ خطأ في الحفظ المحلي: ' + e.message, 'error');
+            }
+        }
+
+        function loadLocal() {
+            const saved = localStorage.getItem('projectData');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        tableData = parsed.map(row => ({
+                            villa: row.villa || '',
+                            stage: row.stage || '',
+                            values: row.values ? calculateAutoValues(row.values) : new Array(18).fill(false)
+                        }));
+                        applyFilters();
+                        showStatus(`✅ تم تحميل ${tableData.length} صف من المخزن المحلي.`, 'success');
+                        return;
+                    }
+                } catch (e) {}
+            }
+            // استخدام البيانات الخام
+            tableData = rawData.map(row => ({
+                ...row,
+                values: calculateAutoValues(row.values)
+            }));
+            applyFilters();
+            showStatus('📋 تم تحميل البيانات الافتراضية.', 'info');
+        }
+
+        function syncWithFirebase() {
+            if (!isFirebaseConnected) {
+                showStatus('⚠️ غير متصل بقاعدة Firebase. تحقق من الاتصال.', 'warning');
+                return;
+            }
+            showStatus('🔄 جاري المزامنة مع Firebase...', 'info');
+            saveToFirebase();
+            setTimeout(() => {
+                loadFromFirebase();
+            }, 1000);
+        }
+
+        function clearFirebaseData() {
+            if (!isFirebaseConnected) {
+                showStatus('⚠️ غير متصل بقاعدة Firebase.', 'warning');
+                return;
+            }
+            if (confirm('⚠️ هل أنت متأكد من مسح جميع البيانات من Firebase؟ هذا الإجراء لا يمكن التراجع عنه!')) {
+                database.ref('projectData').remove()
+                    .then(() => {
+                        showStatus('🗑️ تم مسح جميع البيانات من Firebase.', 'info');
+                        // إعادة تحميل البيانات الافتراضية
+                        tableData = rawData.map(row => ({
+                            ...row,
+                            values: calculateAutoValues(row.values)
+                        }));
+                        applyFilters();
+                        localStorage.setItem('projectData', JSON.stringify(tableData));
+                    })
+                    .catch((error) => {
+                        showStatus('❌ خطأ في مسح البيانات: ' + error.message, 'error');
+                    });
+            }
+        }
+
+        // ================================================================
+        // 14. دوال الحفظ والتحميل (القديمة مع تعديل)
+        // ================================================================
+        function saveData() {
+            // حفظ في Firebase أولاً
+            saveToFirebase();
+            // ثم حفظ محلياً
+            saveLocal();
+            addAuditEntry('حفظ البيانات', 'تم حفظ جميع البيانات');
+        }
+
+        function resetData() {
+            if (confirm('⚠️ هل أنت متأكد من إعادة تعيين جميع البيانات؟')) {
+                tableData = rawData.map(row => ({
+                    ...row,
+                    values: calculateAutoValues(row.values)
+                }));
+                applyFilters();
+                saveLocal();
+                // حفظ في Firebase أيضاً
+                if (isFirebaseConnected) {
+                    saveToFirebase();
+                }
+                showStatus('🔄 تم إعادة تعيين البيانات.', 'info');
+                addAuditEntry('إعادة تعيين', 'تم إعادة تعيين جميع البيانات');
+                if (document.getElementById('reportPage').classList.contains('active')) {
+                    generateReport();
+                }
+            }
+        }
+
+        // ================================================================
+        // 15. تصدير البيانات
+        // ================================================================
+        function exportExcel() {
+            try {
+                const data = tableData.map(row => {
+                    const obj = { 'رقم الفيلا': row.villa, 'رقم المرحلة': row.stage };
+                    columnNames.forEach((name, idx) => {
+                        obj[name] = row.values[idx] ? '✔' : '✘';
+                    });
+                    return obj;
+                });
+
+                const ws = XLSX.utils.json_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'المشروع');
+                XLSX.writeFile(wb, 'تقرير_المشروع.xlsx');
+                showStatus('✅ تم تصدير البيانات إلى Excel بنجاح.', 'success');
+                addAuditEntry('تصدير Excel', 'تم تصدير البيانات إلى ملف Excel');
+            } catch (e) {
+                showStatus('❌ خطأ في تصدير Excel: ' + e.message, 'error');
+            }
+        }
+
+        function exportCSV() {
+            try {
+                let csv = 'رقم الفيلا,رقم المرحلة,' + columnNames.join(',') + '\n';
+                tableData.forEach(row => {
+                    const values = row.values.map(v => v ? '✔' : '✘');
+                    csv += row.villa + ',' + row.stage + ',' + values.join(',') + '\n';
+                });
+
+                const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'تقرير_المشروع.csv';
+                link.click();
+                showStatus('✅ تم تصدير البيانات إلى CSV بنجاح.', 'success');
+                addAuditEntry('تصدير CSV', 'تم تصدير البيانات إلى ملف CSV');
+            } catch (e) {
+                showStatus('❌ خطأ في تصدير CSV: ' + e.message, 'error');
+            }
+        }
+
+        function exportPDF() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('l', 'mm', 'a3');
+
+                const title = currentLang === 'ar' ? 'تقرير متابعة المشروع - تيل' : 'Project Progress Report - Tail';
+                doc.setFontSize(16);
+                doc.text(title, 14, 20);
+
+                doc.setFontSize(10);
+                const dateLabel = currentLang === 'ar' ? 'تاريخ التقرير: ' : 'Report Date: ';
+                doc.text(dateLabel + new Date().toLocaleDateString(currentLang === 'ar' ? 'ar-SA' : 'en-US'), 14, 28);
+
+                const columns = currentLang === 'ar' ?
+                    ['الفيلا', 'المرحلة', ...columnNames] :
+                    ['Villa', 'Stage', ...columnNames.map(n => n.replace(/<br><span class="sub">.*<\/span>/, ''))];
+
+                const rows = tableData.map(row => {
+                    const values = row.values.map(v => v ? '✔' : '✘');
+                    return [row.villa, row.stage, ...values];
+                });
+
+                doc.autoTable({
+                    head: [columns],
+                    body: rows,
+                    startY: 35,
+                    theme: 'grid',
+                    styles: {
+                        fontSize: 7,
+                        cellPadding: 1.5,
+                        halign: 'center'
+                    },
+                    headStyles: {
+                        fillColor: [45, 55, 72],
+                        textColor: [255, 255, 255],
+                        fontSize: 7,
+                        halign: 'center'
+                    },
+                    didDrawCell: function(data) {
+                        if (data.cell.raw === '✔') {
+                            data.cell.styles.fillColor = [72, 187, 120];
+                            data.cell.styles.textColor = [255, 255, 255];
+                        } else if (data.cell.raw === '✘') {
+                            data.cell.styles.fillColor = [252, 129, 129];
+                            data.cell.styles.textColor = [255, 255, 255];
+                        }
+                    }
+                });
+
+                const fileName = currentLang === 'ar' ? 'تقرير_المشروع.pdf' : 'project_report.pdf';
+                doc.save(fileName);
+                showStatus('✅ تم تصدير البيانات إلى PDF بنجاح.', 'success');
+                addAuditEntry('تصدير PDF', 'تم تصدير البيانات إلى ملف PDF');
+            } catch (e) {
+                showStatus('❌ خطأ في تصدير PDF: ' + e.message, 'error');
+            }
+        }
+
+        // ================================================================
+        // 16. وظائف التحكم
+        // ================================================================
+        function showPage(pageId, btn) {
+            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.tab-bar button').forEach(el => el.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            if (pageId === 'reportPage') {
+                generateReport();
+            }
+            if (pageId === 'auditPage') {
+                renderAuditLog();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('currentUserRole');
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('appPage').style.display = 'none';
+            document.getElementById('loginError').textContent = '';
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = 'status-message';
+            statusDiv.classList.add('status-' + type);
+            setTimeout(() => {
+                statusDiv.className = 'status-message';
+            }, 5000);
+        }
+
+        // ================================================================
+        // 17. تسجيل الدخول
+        // ================================================================
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const userType = document.getElementById('userType').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('loginError');
+
+            if (!userType) {
+                errorDiv.textContent = '❌ الرجاء اختيار المستخدم.';
+                return;
+            }
+
+            const userData = users[userType];
+            if (userData && userData.password === password) {
+                currentUser = userType;
+                currentUserRole = userData.permissions;
+
+                localStorage.setItem('currentUser', currentUser);
+                localStorage.setItem('currentUserRole', currentUserRole);
+
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('appPage').style.display = 'block';
+
+                loadData();
+                loadAuditLog();
+
+                document.getElementById('userNameDisplay').textContent = currentUser;
+                document.getElementById('roleBadge').textContent = '🔑 ' + userData.role;
+
+                const permDisplay = {
+                    'all': '🔓 جميع الصلاحيات (كل الأعمدة)',
+                    'civil': '👷 الأعمدة: انتهاء اللياسة, صبة السكريت, أسقف جبسية, دهانات وجه أول, صبية موقع عام',
+                    'mech': '🔧 الأعمدة: تأسيس السباكة, إذن اللياسة, سباكة أسقف, عزل مواسير الصرف, اذن الاسقف, سباكة أرضيات, تشطيب سباكة, سباكة موقع عام',
+                    'elec': '⚡ الأعمدة: تأسيس الكهرباء, أسلاك أرضيات وأسقف, اذن الارضيات, تشطيب كهرباء, كابلات'
+                };
+                document.getElementById('permissionDisplay').textContent = permDisplay[currentUserRole] || '🔓 صلاحيات مخصصة';
+
+                const exportBtn = document.querySelector('.export-dropdown');
+                if (currentUserRole === 'all') {
+                    exportBtn.style.display = 'inline-block';
+                } else {
+                    exportBtn.style.display = 'none';
+                }
+
+                applyFilters();
+                checkAlerts();
+                renderAuditLog();
+                applyTranslations();
+
+                const savedLang = localStorage.getItem('lang') || 'ar';
+                if (savedLang === 'en') {
+                    toggleLanguage();
+                }
+
+                // تحميل البيانات من Firebase تلقائياً
+                setTimeout(() => {
+                    loadFromFirebase();
+                }, 1000);
+
+                setTimeout(() => {
+                    const editableCols = getEditableColumns();
+                    const colNames = editableCols.map(i => columnNames[i]).join('، ');
+                    showStatus(`👋 مرحباً ${currentUser}! الأعمدة القابلة للتعديل: ${colNames || 'لا توجد أعمدة قابلة للتعديل'}`,
+                        'info');
+                }, 600);
+
+            } else {
+                errorDiv.textContent = '❌ كلمة المرور غير صحيحة. حاول مرة أخرى.';
+            }
+        });
+
+        // ================================================================
+        // 18. التحقق من الجلسة
+        // ================================================================
+        window.onload = function() {
+            const savedUser = localStorage.getItem('currentUser');
+            const savedRole = localStorage.getItem('currentUserRole');
+
+            const savedLang = localStorage.getItem('lang') || 'ar';
+            if (savedLang === 'en') {
+                currentLang = 'en';
+                document.body.classList.add('lang-en');
+                document.getElementById('langToggle').textContent = 'AR';
+            }
+
+            if (savedUser && savedRole) {
+                currentUser = savedUser;
+                currentUserRole = savedRole;
+
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('appPage').style.display = 'block';
+
+                loadData();
+                loadAuditLog();
+
+                document.getElementById('userNameDisplay').textContent = currentUser;
+                const userData = users[currentUser];
+                if (userData) {
+                    document.getElementById('roleBadge').textContent = '🔑 ' + userData.role;
+                }
+
+                const permDisplay = {
+                    'all': '🔓 جميع الصلاحيات (كل الأعمدة)',
+                    'civil': '👷 الأعمدة: انتهاء اللياسة, صبة السكريت, أسقف جبسية, دهانات وجه أول, صبية موقع عام',
+                    'mech': '🔧 الأعمدة: تأسيس السباكة, إذن اللياسة, سباكة أسقف, عزل مواسير الصرف, اذن الاسقف, سباكة أرضيات, تشطيب سباكة, سباكة موقع عام',
+                    'elec': '⚡ الأعمدة: تأسيس الكهرباء, أسلاك أرضيات وأسقف, اذن الارضيات, تشطيب كهرباء, كابلات'
+                };
+                document.getElementById('permissionDisplay').textContent = permDisplay[currentUserRole] || '🔓 صلاحيات مخصصة';
+
+                const exportBtn = document.querySelector('.export-dropdown');
+                if (currentUserRole === 'all') {
+                    exportBtn.style.display = 'inline-block';
+                } else {
+                    exportBtn.style.display = 'none';
+                }
+
+                applyFilters();
+                checkAlerts();
+                renderAuditLog();
+                applyTranslations();
+
+                // تحميل البيانات من Firebase
+                setTimeout(() => {
+                    loadFromFirebase();
+                }, 1500);
+
+                setTimeout(() => {
+                    const editableCols = getEditableColumns();
+                    const colNames = editableCols.map(i => columnNames[i]).join('، ');
+                    showStatus(`👋 مرحباً مجدداً ${currentUser}! الأعمدة القابلة للتعديل: ${colNames || 'لا توجد أعمدة قابلة للتعديل'}`,
+                        'info');
+                }, 500);
+            } else {
+                document.getElementById('loginPage').style.display = 'flex';
+                document.getElementById('appPage').style.display = 'none';
+                applyTranslations();
+            }
+        };
+    </script>
+
+</body>
+</html>
