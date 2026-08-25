@@ -16,7 +16,14 @@
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- 🔥 Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js">
+    </script>
+
     <style>
+        /* ===== جميع الستايلات السابقة ===== */
         * {
             margin: 0;
             padding: 0;
@@ -370,30 +377,24 @@
             gap: 8px;
         }
 
-        /* ===== الجدول مع خطوط الشبكة ===== */
+        /* ===== الجدول ===== */
         .table-wrapper {
             overflow-x: auto;
-            max-height: 60vh;
+            max-height: 55vh;
             overflow-y: auto;
             border-radius: 8px;
             border: 2px solid #2d3748;
             background: white;
         }
-        
-        /* تظليل الصفوف بالتناوب */
         .table-wrapper table tbody tr:nth-child(even) {
             background-color: #f7fafc;
         }
         .table-wrapper table tbody tr:nth-child(odd) {
             background-color: #ffffff;
         }
-        
-        /* تظليل الأعمدة بالتناوب - إضافة خطوط رأسية ملونة */
         .table-wrapper table tbody tr td:nth-child(even) {
             background-color: rgba(237, 242, 247, 0.5);
         }
-        
-        /* تحسين ظهور الصف عند المرور بالماوس */
         .table-wrapper table tbody tr:hover {
             background-color: #ebf8ff !important;
             cursor: pointer;
@@ -401,8 +402,6 @@
         .table-wrapper table tbody tr:hover td {
             background-color: #ebf8ff !important;
         }
-        
-        /* تظليل الخلايا القابلة للتعديل مع الحفاظ على الخطوط */
         .table-wrapper table tbody tr td.editable-col {
             background-color: #fefcbf !important;
         }
@@ -412,35 +411,19 @@
         .table-wrapper table tbody tr:nth-child(odd) td.editable-col {
             background-color: #fefcbf !important;
         }
-        
         .table-wrapper table tbody tr td.auto-col {
             background-color: #c6f6d5 !important;
         }
-        .table-wrapper table tbody tr:nth-child(even) td.auto-col {
-            background-color: #c6f6d5 !important;
-        }
-        .table-wrapper table tbody tr:nth-child(odd) td.auto-col {
-            background-color: #c6f6d5 !important;
-        }
-        
         .table-wrapper table tbody tr td.readonly-col {
             background-color: #f7fafc !important;
         }
-        .table-wrapper table tbody tr:nth-child(even) td.readonly-col {
-            background-color: #f2f5f9 !important;
-        }
-        .table-wrapper table tbody tr:nth-child(odd) td.readonly-col {
-            background-color: #f7fafc !important;
-        }
-
-        /* خطوط أفقية ورأسية بارزة */
         .table-wrapper table {
             border-collapse: collapse;
             width: 100%;
             font-size: 12px;
             min-width: 1400px;
+            border: 2px solid #2d3748;
         }
-        
         .table-wrapper table td,
         .table-wrapper table th {
             border: 1.5px solid #a0aec0;
@@ -448,50 +431,23 @@
             text-align: center;
             vertical-align: middle;
         }
-        
-        /* حدود خارجية أكثر وضوحاً */
-        .table-wrapper table {
-            border: 2px solid #2d3748;
-        }
-        
-        /* خطوط أفقية أكثر وضوحاً بين الصفوف */
         .table-wrapper table tbody tr {
             border-bottom: 1.5px solid #cbd5e0;
         }
-        
-        /* خطوط رأسية أكثر وضوحاً بين الأعمدة */
         .table-wrapper table tbody tr td:not(:last-child) {
             border-right: 1.5px solid #cbd5e0;
         }
-        
-        /* تمييز العمود الأول (رقم الفيلا) */
         .table-wrapper table tbody tr td:nth-child(2) {
             font-weight: 700;
             color: #2b6cb0;
             background-color: #ebf8ff !important;
             border-left: 3px solid #2b6cb0;
         }
-        .table-wrapper table tbody tr:nth-child(even) td:nth-child(2) {
-            background-color: #e3f0ff !important;
-        }
-        .table-wrapper table tbody tr:nth-child(odd) td:nth-child(2) {
-            background-color: #ebf8ff !important;
-        }
-        
-        /* تمييز العمود الثاني (رقم المرحلة) */
         .table-wrapper table tbody tr td:nth-child(3) {
             font-weight: 600;
             color: #2d3748;
             background-color: #edf2f7 !important;
         }
-        .table-wrapper table tbody tr:nth-child(even) td:nth-child(3) {
-            background-color: #e8edf3 !important;
-        }
-        .table-wrapper table tbody tr:nth-child(odd) td:nth-child(3) {
-            background-color: #edf2f7 !important;
-        }
-
-        /* تثبيت الرأس */
         thead {
             position: sticky;
             top: 0;
@@ -516,16 +472,12 @@
             display: block;
             font-weight: 400;
         }
-
-        /* صف المؤشرات */
         .table-wrapper table thead tr:nth-child(2) th {
             background: #4a5568;
             font-size: 9px;
             color: #e2e8f0;
             border: 1px solid #5a6a7a !important;
         }
-
-        /* تنسيق صف المجموع */
         .total-row {
             background: #2d3748 !important;
             color: white !important;
@@ -536,43 +488,12 @@
             color: white !important;
             border-color: #4a5568 !important;
         }
-        .total-row td:nth-child(2) {
-            background: #2d3748 !important;
-            color: white !important;
-            border-left: 3px solid #4a5568 !important;
-        }
-        .total-row td:nth-child(3) {
-            background: #2d3748 !important;
-            color: white !important;
-        }
-
-        /* تنسيق الصفوف حسب نسبة الإنجاز */
         .row-low-progress {
             background-color: #fff5f5 !important;
         }
-        .row-low-progress td {
-            background-color: #fff5f5 !important;
-        }
-        .row-low-progress td:nth-child(2) {
-            background-color: #fff0f0 !important;
-        }
-        .row-low-progress td:nth-child(3) {
-            background-color: #ffebeb !important;
-        }
-        
         .row-high-progress {
             background-color: #f0fff4 !important;
         }
-        .row-high-progress td {
-            background-color: #f0fff4 !important;
-        }
-        .row-high-progress td:nth-child(2) {
-            background-color: #e6f7ec !important;
-        }
-        .row-high-progress td:nth-child(3) {
-            background-color: #dcf5e5 !important;
-        }
-
         td .villa-name {
             font-weight: 700;
             color: #2b6cb0;
@@ -600,7 +521,6 @@
             font-size: 11px;
         }
 
-        /* باقي التنسيقات */
         .footer-stats {
             margin-top: 15px;
             padding: 15px 20px;
@@ -632,9 +552,6 @@
         }
         .footer-stats .stat-item .value.orange {
             color: #dd6b20;
-        }
-        .footer-stats .stat-item .value.red {
-            color: #e53e3e;
         }
 
         /* ===== التقارير ===== */
@@ -725,9 +642,6 @@
         }
         .summary-card .value.orange {
             color: #dd6b20;
-        }
-        .summary-card .value.red {
-            color: #e53e3e;
         }
 
         .progress-bar {
@@ -845,7 +759,7 @@
             display: block;
         }
 
-        /* ===== إعدادات Google Sheets ===== */
+        /* ===== إعدادات Firebase ===== */
         .sync-settings {
             background: #f7fafc;
             padding: 20px;
@@ -896,6 +810,22 @@
         .sync-settings .form-row button:hover {
             background: #1a4f8b;
         }
+        .sync-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .sync-status.connected {
+            background: #c6f6d5;
+            color: #22543d;
+            border-right: 4px solid #48bb78;
+        }
+        .sync-status.disconnected {
+            background: #fed7d7;
+            color: #742a2a;
+            border-right: 4px solid #fc8181;
+        }
 
         /* ===== طباعة ===== */
         @media print {
@@ -929,9 +859,6 @@
             .table-wrapper table td,
             .table-wrapper table th {
                 border: 1px solid #000 !important;
-            }
-            .table-wrapper table tbody tr td:nth-child(2) {
-                border-left: 3px solid #2b6cb0 !important;
             }
             #reportPage {
                 display: block !important;
@@ -1000,7 +927,6 @@
             }
         }
 
-        /* ===== وضع اللغة الإنجليزية ===== */
         body.lang-en {
             direction: ltr;
         }
@@ -1075,6 +1001,7 @@
                 👋 <span data-i18n="welcome">مرحباً</span>، <span id="userNameDisplay">...</span>
                 <span class="badge" id="permissionDisplay"></span>
                 <span class="role-badge" id="roleBadge"></span>
+                <span class="badge" id="firebaseStatus" style="background:#48bb78;color:white;">🔥 متصل</span>
             </div>
             <div class="btn-group">
                 <button class="btn-language" onclick="toggleLanguage()"><i class="fas fa-language"></i> <span id="langToggle">EN</span></button>
@@ -1082,7 +1009,7 @@
                 <button class="btn-print-report" onclick="printReport()"><i class="fas fa-print"></i> <span data-i18n="printReport">طباعة التقرير</span></button>
                 <button class="btn-save" onclick="saveData()"><i class="fas fa-save"></i> <span data-i18n="save">حفظ</span></button>
                 <button class="btn-reset" onclick="resetData()"><i class="fas fa-undo"></i> <span data-i18n="reset">إعادة تعيين</span></button>
-                <button class="btn-sync" onclick="syncWithGoogleSheets()"><i class="fas fa-sync"></i> <span data-i18n="sync">مزامنة</span></button>
+                <button class="btn-sync" onclick="syncWithFirebase()"><i class="fas fa-cloud-upload-alt"></i> <span data-i18n="sync">مزامنة</span></button>
                 <div class="export-dropdown">
                     <button class="btn-export"><i class="fas fa-file-export"></i> <span data-i18n="export">تصدير</span> ▾</button>
                     <div class="export-dropdown-content">
@@ -1115,7 +1042,6 @@
         <!-- تبويب: لوحة التحكم (الجدول) -->
         <!-- ============================================================ -->
         <div id="dashboardPage" class="page-section active">
-
             <div class="filter-toolbar">
                 <div class="filter-group">
                     <label data-i18n="search">🔍 بحث:</label>
@@ -1293,32 +1219,26 @@
         <!-- تبويب: الإعدادات -->
         <!-- ============================================================ -->
         <div id="settingsPage" class="page-section">
-            <h3><i class="fas fa-cog"></i> <span data-i18n="settingsTitle">إعدادات المزامنة مع Google Sheets</span></h3>
+            <h3><i class="fas fa-fire"></i> <span>إعدادات Firebase</span></h3>
             <div class="sync-settings">
-                <h4><i class="fab fa-google"></i> Google Sheets API</h4>
+                <h4><i class="fas fa-database"></i> قاعدة البيانات</h4>
                 <div class="form-row">
-                    <label data-i18n="spreadsheetId">📄 معرف الجدول:</label>
-                    <input type="text" id="spreadsheetId" placeholder="1V5ZyFCcEX4GAIZI8LCpCegDwXspIMUhYpq4lGCsPjE4" value="1V5ZyFCcEX4GAIZI8LCpCegDwXspIMUhYpq4lGCsPjE4">
+                    <label>📊 الحالة:</label>
+                    <span id="firebaseConnectionStatus" style="font-weight:bold;color:#38a169;">✅ متصل</span>
                 </div>
                 <div class="form-row">
-                    <label data-i18n="sheetName">📋 اسم الورقة:</label>
-                    <input type="text" id="sheetName" placeholder="Sheet1" value="Sheet1">
-                </div>
-                <div class="form-row">
-                    <label data-i18n="apiKey">🔑 مفتاح API:</label>
-                    <input type="text" id="apiKey" placeholder="أدخل مفتاح API من Google Cloud Console" value="">
+                    <label>📁 المسار:</label>
+                    <span style="font-weight:600;">teel-project-4ffd0 / projectData</span>
                 </div>
                 <div class="form-row" style="margin-top:10px;">
-                    <button onclick="saveSettings()" data-i18n="saveSettings">💾 حفظ الإعدادات</button>
-                    <button onclick="testConnection()" data-i18n="testConnection">🔗 اختبار الاتصال</button>
-                    <button onclick="syncWithGoogleSheets()" data-i18n="syncNow">🔄 مزامنة الآن</button>
+                    <button onclick="syncWithFirebase()" style="background:#38a169;">🔄 مزامنة الآن</button>
+                    <button onclick="loadFromFirebase()" style="background:#2b6cb0;">📥 تحميل من Firebase</button>
+                    <button onclick="saveToFirebase()" style="background:#9f7aea;">📤 حفظ إلى Firebase</button>
+                    <button onclick="clearFirebaseData()" style="background:#fc8181;">🗑️ مسح البيانات</button>
                 </div>
                 <div style="margin-top:10px;font-size:12px;color:#718096;">
-                    <i class="fas fa-info-circle"></i> 
-                    <span data-i18n="syncHelp">لمزامنة البيانات مع Google Sheets، تحتاج إلى:</span><br>
-                    <span data-i18n="syncHelp1">1. تفعيل Google Sheets API في Google Cloud Console</span><br>
-                    <span data-i18n="syncHelp2">2. إنشاء مفتاح API أو حساب خدمة (Service Account)</span><br>
-                    <span data-i18n="syncHelp3">3. مشاركة الجدول مع البريد الإلكتروني للحساب الخدمة</span>
+                    <i class="fas fa-info-circle"></i>
+                    يتم حفظ البيانات تلقائياً في Firebase عند كل تعديل.
                 </div>
             </div>
         </div>
@@ -1329,6 +1249,54 @@
     <!-- جافا سكريبت -->
     <!-- ============================================================ -->
     <script>
+        // ================================================================
+        // 🔥 تهيئة Firebase
+        // ================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDBerLb1LA_CsdbuafZpuvH4deJZ-dDoZI",
+            authDomain: "teel-project-4ffd0.firebaseapp.com",
+            databaseURL: "https://teel-project-4ffd0-default-rtdb.firebaseio.com",
+            projectId: "teel-project-4ffd0",
+            storageBucket: "teel-project-4ffd0.firebasestorage.app",
+            messagingSenderId: "224352489131",
+            appId: "1:224352489131:web:44e2a37d5e399f289231ee"
+        };
+
+        // تهيئة Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let isFirebaseConnected = false;
+
+        // التحقق من الاتصال
+        const connectedRef = database.ref('.info/connected');
+        connectedRef.on('value', (snap) => {
+            isFirebaseConnected = snap.val() === true;
+            const statusEl = document.getElementById('firebaseStatus');
+            const connStatus = document.getElementById('firebaseConnectionStatus');
+            if (isFirebaseConnected) {
+                statusEl.textContent = '🔥 متصل';
+                statusEl.style.background = '#48bb78';
+                statusEl.style.color = 'white';
+                if (connStatus) {
+                    connStatus.textContent = '✅ متصل';
+                    connStatus.style.color = '#38a169';
+                }
+                showStatus('✅ متصل بقاعدة Firebase بنجاح.', 'success');
+                // تحميل البيانات تلقائياً عند الاتصال
+                loadFromFirebase();
+            } else {
+                statusEl.textContent = '⚠️ غير متصل';
+                statusEl.style.background = '#fc8181';
+                statusEl.style.color = 'white';
+                if (connStatus) {
+                    connStatus.textContent = '❌ غير متصل';
+                    connStatus.style.color = '#e53e3e';
+                }
+                showStatus('⚠️ غير متصل بقاعدة Firebase.', 'warning');
+            }
+        });
+
         // ================================================================
         // 0. اللغة - الترجمة
         // ================================================================
@@ -1778,6 +1746,7 @@
         let filteredData = [];
 
         function loadData() {
+            // محاولة تحميل من localStorage أولاً
             const saved = localStorage.getItem('projectData');
             if (saved) {
                 try {
@@ -1791,6 +1760,7 @@
                     }
                 } catch (e) {}
             }
+            // استخدام البيانات الخام
             tableData = rawData.map(row => ({
                 ...row,
                 values: calculateAutoValues(row.values)
@@ -1925,6 +1895,8 @@
 
                             applyFilters();
                             updateFooterStats();
+                            // حفظ تلقائي إلى Firebase
+                            saveToFirebase();
                             showStatus(`✅ تم تحديث ${columnNames[colIndex]} للفيلا ${row.villa}`, 'success');
                         });
                     }
@@ -2270,7 +2242,177 @@
         }
 
         // ================================================================
-        // 13. تصدير البيانات
+        // 13. دوال Firebase
+        // ================================================================
+        function saveToFirebase() {
+            if (!isFirebaseConnected) {
+                showStatus('⚠️ غير متصل بقاعدة Firebase. سيتم الحفظ محلياً.', 'warning');
+                saveLocal();
+                return;
+            }
+
+            try {
+                // تحويل البيانات إلى صيغة JSON
+                const dataToSave = tableData.map(row => ({
+                    villa: row.villa,
+                    stage: row.stage,
+                    values: row.values
+                }));
+
+                // حفظ في Firebase
+                database.ref('projectData').set(dataToSave)
+                    .then(() => {
+                        showStatus('✅ تم حفظ البيانات في Firebase بنجاح.', 'success');
+                        document.getElementById('firebaseStatus').textContent = '🔥 متصل';
+                        document.getElementById('firebaseStatus').style.background = '#48bb78';
+                    })
+                    .catch((error) => {
+                        showStatus('❌ خطأ في حفظ Firebase: ' + error.message, 'error');
+                        // حفظ محلي كنسخة احتياطية
+                        saveLocal();
+                    });
+            } catch (e) {
+                showStatus('❌ خطأ: ' + e.message, 'error');
+                saveLocal();
+            }
+        }
+
+        function loadFromFirebase() {
+            if (!isFirebaseConnected) {
+                showStatus('⚠️ غير متصل بقاعدة Firebase. جارٍ التحميل من المخزن المحلي.', 'warning');
+                loadLocal();
+                return;
+            }
+
+            showStatus('⏳ جاري تحميل البيانات من Firebase...', 'info');
+
+            database.ref('projectData').once('value')
+                .then((snapshot) => {
+                    const data = snapshot.val();
+                    if (data && Array.isArray(data) && data.length > 0) {
+                        tableData = data.map(row => ({
+                            villa: row.villa || '',
+                            stage: row.stage || '',
+                            values: row.values ? calculateAutoValues(row.values) : new Array(18).fill(false)
+                        }));
+                        // حفظ نسخة محلية
+                        localStorage.setItem('projectData', JSON.stringify(tableData));
+                        applyFilters();
+                        showStatus(`✅ تم تحميل ${tableData.length} صف من Firebase.`, 'success');
+                    } else {
+                        showStatus('ℹ️ لا توجد بيانات في Firebase. جارٍ التحميل من المخزن المحلي.', 'info');
+                        loadLocal();
+                    }
+                })
+                .catch((error) => {
+                    showStatus('❌ خطأ في تحميل Firebase: ' + error.message, 'error');
+                    loadLocal();
+                });
+        }
+
+        function saveLocal() {
+            try {
+                localStorage.setItem('projectData', JSON.stringify(tableData));
+                showStatus('💾 تم الحفظ في المخزن المحلي.', 'info');
+            } catch (e) {
+                showStatus('❌ خطأ في الحفظ المحلي: ' + e.message, 'error');
+            }
+        }
+
+        function loadLocal() {
+            const saved = localStorage.getItem('projectData');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        tableData = parsed.map(row => ({
+                            villa: row.villa || '',
+                            stage: row.stage || '',
+                            values: row.values ? calculateAutoValues(row.values) : new Array(18).fill(false)
+                        }));
+                        applyFilters();
+                        showStatus(`✅ تم تحميل ${tableData.length} صف من المخزن المحلي.`, 'success');
+                        return;
+                    }
+                } catch (e) {}
+            }
+            // استخدام البيانات الخام
+            tableData = rawData.map(row => ({
+                ...row,
+                values: calculateAutoValues(row.values)
+            }));
+            applyFilters();
+            showStatus('📋 تم تحميل البيانات الافتراضية.', 'info');
+        }
+
+        function syncWithFirebase() {
+            if (!isFirebaseConnected) {
+                showStatus('⚠️ غير متصل بقاعدة Firebase. تحقق من الاتصال.', 'warning');
+                return;
+            }
+            showStatus('🔄 جاري المزامنة مع Firebase...', 'info');
+            saveToFirebase();
+            setTimeout(() => {
+                loadFromFirebase();
+            }, 1000);
+        }
+
+        function clearFirebaseData() {
+            if (!isFirebaseConnected) {
+                showStatus('⚠️ غير متصل بقاعدة Firebase.', 'warning');
+                return;
+            }
+            if (confirm('⚠️ هل أنت متأكد من مسح جميع البيانات من Firebase؟ هذا الإجراء لا يمكن التراجع عنه!')) {
+                database.ref('projectData').remove()
+                    .then(() => {
+                        showStatus('🗑️ تم مسح جميع البيانات من Firebase.', 'info');
+                        // إعادة تحميل البيانات الافتراضية
+                        tableData = rawData.map(row => ({
+                            ...row,
+                            values: calculateAutoValues(row.values)
+                        }));
+                        applyFilters();
+                        localStorage.setItem('projectData', JSON.stringify(tableData));
+                    })
+                    .catch((error) => {
+                        showStatus('❌ خطأ في مسح البيانات: ' + error.message, 'error');
+                    });
+            }
+        }
+
+        // ================================================================
+        // 14. دوال الحفظ والتحميل (القديمة مع تعديل)
+        // ================================================================
+        function saveData() {
+            // حفظ في Firebase أولاً
+            saveToFirebase();
+            // ثم حفظ محلياً
+            saveLocal();
+            addAuditEntry('حفظ البيانات', 'تم حفظ جميع البيانات');
+        }
+
+        function resetData() {
+            if (confirm('⚠️ هل أنت متأكد من إعادة تعيين جميع البيانات؟')) {
+                tableData = rawData.map(row => ({
+                    ...row,
+                    values: calculateAutoValues(row.values)
+                }));
+                applyFilters();
+                saveLocal();
+                // حفظ في Firebase أيضاً
+                if (isFirebaseConnected) {
+                    saveToFirebase();
+                }
+                showStatus('🔄 تم إعادة تعيين البيانات.', 'info');
+                addAuditEntry('إعادة تعيين', 'تم إعادة تعيين جميع البيانات');
+                if (document.getElementById('reportPage').classList.contains('active')) {
+                    generateReport();
+                }
+            }
+        }
+
+        // ================================================================
+        // 15. تصدير البيانات
         // ================================================================
         function exportExcel() {
             try {
@@ -2372,127 +2514,7 @@
         }
 
         // ================================================================
-        // 14. المزامنة مع Google Sheets
-        // ================================================================
-        function saveSettings() {
-            const spreadsheetId = document.getElementById('spreadsheetId').value;
-            const sheetName = document.getElementById('sheetName').value;
-            const apiKey = document.getElementById('apiKey').value;
-
-            localStorage.setItem('googleSheetId', spreadsheetId);
-            localStorage.setItem('googleSheetName', sheetName);
-            localStorage.setItem('googleApiKey', apiKey);
-
-            showStatus('✅ تم حفظ إعدادات Google Sheets.', 'success');
-        }
-
-        function loadSettings() {
-            const spreadsheetId = localStorage.getItem('googleSheetId') || '1V5ZyFCcEX4GAIZI8LCpCegDwXspIMUhYpq4lGCsPjE4';
-            const sheetName = localStorage.getItem('googleSheetName') || 'Sheet1';
-            const apiKey = localStorage.getItem('googleApiKey') || '';
-
-            document.getElementById('spreadsheetId').value = spreadsheetId;
-            document.getElementById('sheetName').value = sheetName;
-            document.getElementById('apiKey').value = apiKey;
-        }
-
-        function testConnection() {
-            const apiKey = document.getElementById('apiKey').value;
-            if (!apiKey) {
-                showStatus('⚠️ الرجاء إدخال مفتاح API أولاً.', 'warning');
-                return;
-            }
-            showStatus('⏳ جاري اختبار الاتصال...', 'info');
-            setTimeout(() => {
-                if (apiKey.length > 10) {
-                    showStatus('✅ تم اختبار الاتصال بنجاح! الجدول متاح.', 'success');
-                } else {
-                    showStatus('⚠️ يبدو أن مفتاح API غير صحيح. تأكد من المفتاح.', 'warning');
-                }
-            }, 1500);
-        }
-
-        async function syncWithGoogleSheets() {
-            const apiKey = document.getElementById('apiKey').value;
-            const spreadsheetId = document.getElementById('spreadsheetId').value;
-            const sheetName = document.getElementById('sheetName').value;
-
-            if (!apiKey) {
-                showStatus('⚠️ الرجاء إدخال مفتاح API في الإعدادات أولاً.', 'warning');
-                return;
-            }
-
-            showStatus('⏳ جاري المزامنة مع Google Sheets...', 'info');
-
-            try {
-                // محاولة القراءة
-                const readUrl =
-                    `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${sheetName}?key=${apiKey}`;
-                const readResponse = await fetch(readUrl);
-                const readData = await readResponse.json();
-
-                if (readResponse.ok && readData.values) {
-                    const headers = readData.values[0];
-                    const rows = readData.values.slice(1);
-                    const newData = rows.map(row => {
-                        const villa = row[0] || '';
-                        const stage = row[1] || '';
-                        const values = columnNames.map((_, idx) => {
-                            const val = row[idx + 2] || '';
-                            return val === '✔' || val === 'TRUE' || val === 'صح' || val === 'true';
-                        });
-                        return { villa, stage, values: calculateAutoValues(values) };
-                    });
-
-                    if (newData.length > 0) {
-                        tableData = newData;
-                        localStorage.setItem('projectData', JSON.stringify(tableData));
-                        applyFilters();
-                        showStatus(`✅ تمت المزامنة! استيراد ${newData.length} صف.`, 'success');
-                        addAuditEntry('مزامنة Google Sheets', `تم استيراد ${newData.length} صف`);
-                    } else {
-                        showStatus('⚠️ لا توجد بيانات في الجدول.', 'warning');
-                    }
-                } else {
-                    // محاولة الكتابة
-                    const writeUrl =
-                        `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${sheetName}?valueInputOption=RAW&key=${apiKey}`;
-                    const writeData = {
-                        values: [
-                            ['رقم الفيلا', 'رقم المرحلة', ...columnNames],
-                            ...tableData.map(row => {
-                                const values = row.values.map(v => v ? '✔' : '✘');
-                                return [row.villa, row.stage, ...values];
-                            })
-                        ]
-                    };
-
-                    const writeResponse = await fetch(writeUrl, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(writeData)
-                    });
-
-                    if (writeResponse.ok) {
-                        showStatus(`✅ تم رفع ${tableData.length} صف إلى Google Sheets.`, 'success');
-                        addAuditEntry('مزامنة Google Sheets', `تم رفع ${tableData.length} صف`);
-                    } else {
-                        const errorText = await writeResponse.text();
-                        showStatus(`❌ فشل: ${errorText}`, 'error');
-                    }
-                }
-            } catch (e) {
-                // محاكاة
-                console.warn('محاكاة المزامنة:', e.message);
-                setTimeout(() => {
-                    showStatus(`✅ تمت المزامنة (محاكاة) - ${tableData.length} صف.`, 'success');
-                    addAuditEntry('مزامنة Google Sheets (محاكاة)', `${tableData.length} صف`);
-                }, 1500);
-            }
-        }
-
-        // ================================================================
-        // 15. وظائف التحكم
+        // 16. وظائف التحكم
         // ================================================================
         function showPage(pageId, btn) {
             document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
@@ -2505,36 +2527,6 @@
             }
             if (pageId === 'auditPage') {
                 renderAuditLog();
-            }
-            if (pageId === 'settingsPage') {
-                loadSettings();
-            }
-        }
-
-        function saveData() {
-            try {
-                localStorage.setItem('projectData', JSON.stringify(tableData));
-                showStatus('✅ تم حفظ البيانات بنجاح.', 'success');
-                addAuditEntry('حفظ البيانات', 'تم حفظ جميع البيانات');
-            } catch (e) {
-                showStatus('❌ خطأ في الحفظ: ' + e.message, 'error');
-            }
-        }
-
-        function resetData() {
-            if (confirm('⚠️ هل أنت متأكد من إعادة تعيين جميع البيانات؟')) {
-                tableData = rawData.map(row => ({
-                    ...row,
-                    values: calculateAutoValues(row.values)
-                }));
-                localStorage.removeItem('projectData');
-                applyFilters();
-                updateFooterStats();
-                showStatus('🔄 تم إعادة تعيين البيانات.', 'info');
-                addAuditEntry('إعادة تعيين', 'تم إعادة تعيين جميع البيانات');
-                if (document.getElementById('reportPage').classList.contains('active')) {
-                    generateReport();
-                }
             }
         }
 
@@ -2557,7 +2549,7 @@
         }
 
         // ================================================================
-        // 16. تسجيل الدخول
+        // 17. تسجيل الدخول
         // ================================================================
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -2583,7 +2575,6 @@
 
                 loadData();
                 loadAuditLog();
-                loadSettings();
 
                 document.getElementById('userNameDisplay').textContent = currentUser;
                 document.getElementById('roleBadge').textContent = '🔑 ' + userData.role;
@@ -2613,6 +2604,11 @@
                     toggleLanguage();
                 }
 
+                // تحميل البيانات من Firebase تلقائياً
+                setTimeout(() => {
+                    loadFromFirebase();
+                }, 1000);
+
                 setTimeout(() => {
                     const editableCols = getEditableColumns();
                     const colNames = editableCols.map(i => columnNames[i]).join('، ');
@@ -2626,7 +2622,7 @@
         });
 
         // ================================================================
-        // 17. التحقق من الجلسة
+        // 18. التحقق من الجلسة
         // ================================================================
         window.onload = function() {
             const savedUser = localStorage.getItem('currentUser');
@@ -2648,7 +2644,6 @@
 
                 loadData();
                 loadAuditLog();
-                loadSettings();
 
                 document.getElementById('userNameDisplay').textContent = currentUser;
                 const userData = users[currentUser];
@@ -2675,6 +2670,11 @@
                 checkAlerts();
                 renderAuditLog();
                 applyTranslations();
+
+                // تحميل البيانات من Firebase
+                setTimeout(() => {
+                    loadFromFirebase();
+                }, 1500);
 
                 setTimeout(() => {
                     const editableCols = getEditableColumns();
